@@ -7,44 +7,45 @@
       </div>
 
       <div class="header-actions">
-        <button class="btn" @click="resetSession()">
-          {{ t("resetSession") }}
-        </button>
-        <button class="btn" @click="exportSongsJson()">
-          {{ t("exportSongsJson") }}
-        </button>
+        <button class="btn" @click="resetSession()">{{ t("resetSession") }}</button>
+        <button class="btn" @click="exportSongsJson()">{{ t("exportSongsJson") }}</button>
       </div>
     </header>
 
-    <main class="grid">
-      <!-- PANEL: Songs / Source -->
-      <details class="card collapsible" open>
-        <summary class="card-summary">
+    <!-- ✅ NEW: Top-level app tabs -->
+    <nav class="app-tabs" role="tablist" aria-label="App sections">
+      <button class="app-tab" role="tab" :aria-selected="appTab === 'songs'" :class="{ active: appTab === 'songs' }"
+        @click="appTab = 'songs'">
+        {{ t("sourceAndSongs") }}
+      </button>
+
+      <button class="app-tab" role="tab" :aria-selected="appTab === 'train'" :class="{ active: appTab === 'train' }"
+        @click="appTab = 'train'">
+        {{ t("training") }}
+      </button>
+
+      <button class="app-tab" role="tab" :aria-selected="appTab === 'settings'"
+        :class="{ active: appTab === 'settings' }" @click="appTab = 'settings'">
+        {{ t("exerciseAndOptions") }}
+      </button>
+    </nav>
+
+    <main class="main" role="tabpanel">
+      <!-- TAB: Songs -->
+      <section v-if="appTab === 'songs'" class="card">
+        <div class="card-head">
           <div class="card-title">{{ t("sourceAndSongs") }}</div>
-          <div class="card-chevron" aria-hidden="true">▾</div>
-        </summary>
+        </div>
 
         <div class="card-body">
           <div class="tabs">
-            <button
-              class="tab"
-              :class="{ active: sourceTab === 'library' }"
-              @click="sourceTab = 'library'"
-            >
+            <button class="tab" :class="{ active: sourceTab === 'library' }" @click="sourceTab = 'library'">
               {{ t("tabLibrary") }}
             </button>
-            <button
-              class="tab"
-              :class="{ active: sourceTab === 'paste' }"
-              @click="sourceTab = 'paste'"
-            >
+            <button class="tab" :class="{ active: sourceTab === 'paste' }" @click="sourceTab = 'paste'">
               {{ t("tabPaste") }}
             </button>
-            <button
-              class="tab"
-              :class="{ active: sourceTab === 'json' }"
-              @click="sourceTab = 'json'"
-            >
+            <button class="tab" :class="{ active: sourceTab === 'json' }" @click="sourceTab = 'json'">
               {{ t("tabJsonImport") }}
             </button>
           </div>
@@ -66,19 +67,12 @@
 
             <div class="row">
               <label>{{ t("search") }}</label>
-              <input
-                v-model="songSearch"
-                :placeholder="t('searchPlaceholder')"
-              />
+              <input v-model="songSearch" :placeholder="t('searchPlaceholder')" />
             </div>
 
             <div class="song-list">
-              <div
-                v-for="s in sortedFilteredSongs"
-                :key="s.id"
-                class="song-row"
-                :class="{ selected: currentSong?.id === s.id }"
-              >
+              <div v-for="s in sortedFilteredSongs" :key="s.id" class="song-row"
+                :class="{ selected: currentSong?.id === s.id }">
                 <button class="song-main" @click="selectSong(s.id)">
                   <div class="song-title">{{ s.title }}</div>
                   <div class="song-meta">
@@ -88,24 +82,12 @@
                   </div>
                 </button>
 
-                <button
-                  class="icon-btn danger"
-                  type="button"
-                  :aria-label="t('delete')"
-                  :title="t('delete')"
-                  @click.stop="deleteSongById(s.id)"
-                >
-                  <!-- inline SVG trash icon -->
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="18"
-                    height="18"
-                    aria-hidden="true"
-                  >
+                <button class="icon-btn danger" type="button" :aria-label="t('delete')" :title="t('delete')"
+                  @click.stop="deleteSongById(s.id)">
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
                     <path
                       d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 7h2v9h-2v-9zm4 0h2v9h-2v-9zM7 10h2v9H7v-9zm1-1h10l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 9h2z"
-                      fill="currentColor"
-                    />
+                      fill="currentColor" />
                   </svg>
                 </button>
               </div>
@@ -117,10 +99,7 @@
           <div v-else-if="sourceTab === 'paste'" class="panel">
             <div class="row">
               <label>{{ t("title") }}</label>
-              <input
-                v-model="pasteForm.title"
-                :placeholder="t('titlePlaceholder')"
-              />
+              <input v-model="pasteForm.title" :placeholder="t('titlePlaceholder')" />
             </div>
             <div class="row">
               <label>{{ t("artist") }}</label>
@@ -132,24 +111,14 @@
             </div>
 
             <label>{{ t("pasteFullLyrics") }}</label>
-            <textarea
-              v-model="pasteForm.text"
-              rows="12"
-              :placeholder="t('pastePlaceholder')"
-            ></textarea>
+            <textarea v-model="pasteForm.text" rows="12" :placeholder="t('pastePlaceholder')"></textarea>
 
             <div class="row">
-              <button class="btn primary" @click="addSongFromPaste()">
-                {{ t("addToLibrary") }}
-              </button>
-              <button
-                class="btn"
-                @click="
-                  pasteForm = { title: '', artist: '', album: '', text: '' }
-                "
-              >
+              <button class="btn primary" @click="addSongFromPaste()">{{ t("addToLibrary") }}</button>
+              <button class="btn" @click="clearPasteForm()">
                 {{ t("clear") }}
               </button>
+
             </div>
 
             <div class="small">{{ t("pasteHint") }}</div>
@@ -157,19 +126,11 @@
 
           <div v-else class="panel">
             <label>{{ t("pasteJson") }}</label>
-            <textarea
-              v-model="jsonImportText"
-              rows="12"
-              :placeholder="t('jsonPlaceholder')"
-            ></textarea>
+            <textarea v-model="jsonImportText" rows="12" :placeholder="t('jsonPlaceholder')"></textarea>
 
             <div class="row">
-              <button class="btn primary" @click="importSongsJson()">
-                {{ t("import") }}
-              </button>
-              <button class="btn" @click="jsonImportText = ''">
-                {{ t("clear") }}
-              </button>
+              <button class="btn primary" @click="importSongsJson()">{{ t("import") }}</button>
+              <button class="btn" @click="jsonImportText = ''">{{ t("clear") }}</button>
             </div>
 
             <details class="small">
@@ -178,19 +139,184 @@
             </details>
           </div>
         </div>
-      </details>
+      </section>
 
-      <!-- PANEL: Settings -->
-      <details class="card collapsible" open>
-        <summary class="card-summary">
-          <div class="card-title">{{ t("exerciseAndOptions") }}</div>
-          <div class="card-chevron" aria-hidden="true">▾</div>
-        </summary>
+      <!-- TAB: Train -->
+      <section v-else-if="appTab === 'train'" class="card">
+        <div class="card-head">
+          <div class="card-title">{{ t("training") }}</div>
+        </div>
 
         <div class="card-body">
-          <div v-if="!currentSong" class="empty">
-            {{ t("chooseSongFirst") }}
+          <div v-if="!currentSong" class="empty">{{ t("chooseSongFirst") }}</div>
+
+          <div v-else class="trainer">
+            <div class="song-header">
+              <div>
+                <div class="now-playing">{{ currentSong.title }}</div>
+                <div class="small">
+                  <span v-if="currentSong.artist">{{ currentSong.artist }}</span>
+                  <span v-if="currentSong.album"> • {{ currentSong.album }}</span>
+                  <span> • {{ t("linesCount", { n: currentSong.lines.length }) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="prompt">
+              <div class="label">{{ t("prompt") }}</div>
+              <div class="line">{{ promptLine }}</div>
+            </div>
+
+            <div v-if="revealAnswer" class="answer">
+              <div class="label">{{ t("answer") }}</div>
+              <div class="line">{{ answerLine }}</div>
+            </div>
+
+            <!-- MODE: nextLine -->
+            <div v-if="settings.mode === 'nextLine'">
+              <h3>{{ t("chooseNextLine") }}</h3>
+
+              <div v-if="settings.nextLineInput === 'choice'" class="choices">
+                <button v-for="c in mcqChoices" :key="c.key" class="choice" :class="choiceClassText(c.text)"
+                  :disabled="roundLocked" @click="submitChoice(c.text)">
+                  {{ c.text }}
+                </button>
+              </div>
+
+              <div v-else>
+                <div class="row">
+                  <input v-model="typedInput" :disabled="roundLocked" :placeholder="t('typeHere')"
+                    @keydown.enter.prevent="submitTypedNextLine()" />
+                  <button class="btn primary" :disabled="roundLocked" @click="submitTypedNextLine()">
+                    {{ t("check") }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- MODE: cloze -->
+            <div v-else-if="settings.mode === 'cloze'">
+              <h3>{{ t("fillMissingWords") }}</h3>
+
+              <div class="cloze-line">
+                <span v-for="(tkn, i) in clozeTokens" :key="i">
+                  <template v-if="tkn.type === 'text'">{{ tkn.value }}</template>
+                  <template v-else>
+                    <span class="blank">{{ tkn.filled ?? "____" }}</span>
+                  </template>
+                </span>
+              </div>
+
+              <div v-if="settings.clozeInput === 'choice'">
+                <div class="small">{{ t("clozeChoiceHint") }}</div>
+
+                <div class="row">
+                  <div class="field" style="flex: 1">
+                    <label>{{ t("blank") }}</label>
+                    <select v-model.number="activeBlankIndex" :disabled="roundLocked">
+                      <option v-for="(_b, idx) in clozeBlanks" :key="idx" :value="idx">
+                        {{ t("blankOf", { i: idx + 1, n: clozeBlanks.length }) }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="field" style="flex: 1" v-if="settings.showClozeTarget === 'on'">
+                    <label>{{ t("targetWordHelper") }}</label>
+                    <input :value="clozeBlanks[activeBlankIndex]?.correct ?? ''" disabled />
+                  </div>
+                </div>
+
+                <div class="choices">
+                  <button v-for="w in clozeChoices" :key="w" class="choice" :class="choiceClassWord(w)"
+                    :disabled="roundLocked || isBlankFilled(activeBlankIndex)" @click="submitClozeChoice(w)">
+                    {{ w }}
+                  </button>
+                </div>
+              </div>
+
+              <div v-else>
+                <div class="small">{{ t("clozeTypeHint") }}</div>
+                <div class="row">
+                  <input v-model="typedInput" :disabled="roundLocked" :placeholder="t('typeHere')"
+                    @keydown.enter.prevent="submitTypedCloze()" />
+                  <button class="btn primary" :disabled="roundLocked" @click="submitTypedCloze()">
+                    {{ t("check") }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- MODE: type -->
+            <div v-else>
+              <h3>{{ t("modeType") }}</h3>
+
+              <div v-if="settings.typeTarget === 'currentLine' && settings.showHintLine === 'on'" class="small">
+                {{ t("typeHintLine") }}
+              </div>
+
+              <div class="row">
+                <input v-model="typedInput" :disabled="roundLocked" :placeholder="t('typeHere')"
+                  @keydown.enter.prevent="submitTypedLine()" />
+                <button class="btn primary" :disabled="roundLocked" @click="submitTypedLine()">
+                  {{ t("check") }}
+                </button>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="row">
+                <button class="btn" @click="revealAnswer = !revealAnswer">
+                  {{ revealAnswer ? t("hideAnswer") : t("showAnswer") }}
+                </button>
+
+                <!-- ✅ only after wrong answer -->
+                <button v-if="showContinue" class="btn" @click="continueAfterWrong()">
+                  {{ t("continue") }}
+                </button>
+
+                <!-- optional -->
+                <button v-if="showContinue" class="btn primary" @click="tryAgainSamePrompt()">
+                  {{ t("tryAgain") }}
+                </button>
+              </div>
+
+            </div>
+
+            <div class="feedback" v-if="feedback.message">
+              <div :class="['pill', feedback.ok ? 'ok' : 'bad']">{{ feedback.message }}</div>
+              <div class="small" v-if="feedback.details">{{ feedback.details }}</div>
+            </div>
+
+            <div class="stats">
+              <div class="stat">
+                <div class="label">{{ t("statsScore") }}</div>
+                <div class="value">{{ t("scoreLine", { ok: stats.correct, total: stats.total }) }}</div>
+              </div>
+
+              <div class="stat" v-if="settings.mode === 'cloze'">
+                <div class="label">{{ t("statsClozeDifficulty") }}</div>
+                <div class="value">{{ t("missingWords", { n: clozeMissingCount }) }}</div>
+              </div>
+
+              <div class="stat">
+                <div class="label">{{ t("statsLineIndex") }}</div>
+                <div class="value">
+                  {{ t("indexOf", { i: currentIndex + 1, n: currentSong.lines.length }) }}
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
+      </section>
+
+      <!-- TAB: Settings -->
+      <section v-else class="card">
+        <div class="card-head">
+          <div class="card-title">{{ t("exerciseAndOptions") }}</div>
+        </div>
+
+        <div class="card-body">
+          <div v-if="!currentSong" class="empty">{{ t("chooseSongFirst") }}</div>
 
           <div v-else>
             <div class="settings-grid">
@@ -221,10 +347,7 @@
 
               <div class="field">
                 <label>{{ t("optionCount") }}</label>
-                <select
-                  v-model.number="settings.optionCount"
-                  @change="resetRound(true)"
-                >
+                <select v-model.number="settings.optionCount" @change="resetRound(true)">
                   <option :value="3">3</option>
                   <option :value="4">4</option>
                   <option :value="5">5</option>
@@ -232,13 +355,9 @@
                 </select>
               </div>
 
-              <!-- Next-line input: choice or type -->
               <div class="field" v-if="settings.mode === 'nextLine'">
                 <label>{{ t("nextLineInput") }}</label>
-                <select
-                  v-model="settings.nextLineInput"
-                  @change="resetRound(false)"
-                >
+                <select v-model="settings.nextLineInput" @change="resetRound(false)">
                   <option value="choice">{{ t("inputChoice") }}</option>
                   <option value="type">{{ t("inputType") }}</option>
                 </select>
@@ -246,32 +365,19 @@
 
               <div class="field" v-if="settings.mode === 'cloze'">
                 <label>{{ t("clozeStartMissing") }}</label>
-                <input
-                  type="number"
-                  min="1"
-                  :max="12"
-                  v-model.number="settings.clozeStartMissing"
-                  @change="resetRound(true)"
-                />
+                <input type="number" min="1" :max="12" v-model.number="settings.clozeStartMissing"
+                  @change="resetRound(true)" />
               </div>
 
               <div class="field" v-if="settings.mode === 'cloze'">
                 <label>{{ t("clozeMaxMissing") }}</label>
-                <input
-                  type="number"
-                  min="1"
-                  :max="16"
-                  v-model.number="settings.clozeMaxMissing"
-                  @change="resetRound(true)"
-                />
+                <input type="number" min="1" :max="16" v-model.number="settings.clozeMaxMissing"
+                  @change="resetRound(true)" />
               </div>
 
               <div class="field" v-if="settings.mode === 'cloze'">
                 <label>{{ t("clozeProgression") }}</label>
-                <select
-                  v-model="settings.clozeProgression"
-                  @change="resetRound(true)"
-                >
+                <select v-model="settings.clozeProgression" @change="resetRound(true)">
                   <option value="on">{{ t("on") }}</option>
                   <option value="off">{{ t("off") }}</option>
                 </select>
@@ -279,26 +385,15 @@
 
               <div class="field" v-if="settings.mode === 'cloze'">
                 <label>{{ t("clozeInput") }}</label>
-                <select
-                  v-model="settings.clozeInput"
-                  @change="resetRound(true)"
-                >
+                <select v-model="settings.clozeInput" @change="resetRound(true)">
                   <option value="choice">{{ t("inputChoice") }}</option>
                   <option value="type">{{ t("inputType") }}</option>
                 </select>
               </div>
 
-              <div
-                class="field"
-                v-if="
-                  settings.mode === 'cloze' && settings.clozeInput === 'choice'
-                "
-              >
+              <div class="field" v-if="settings.mode === 'cloze' && settings.clozeInput === 'choice'">
                 <label>{{ t("showClozeTarget") }}</label>
-                <select
-                  v-model="settings.showClozeTarget"
-                  @change="resetRound(false)"
-                >
+                <select v-model="settings.showClozeTarget" @change="resetRound(false)">
                   <option value="off">{{ t("off") }}</option>
                   <option value="on">{{ t("on") }}</option>
                 </select>
@@ -306,290 +401,36 @@
 
               <div class="field" v-if="settings.mode === 'type'">
                 <label>{{ t("typeMode") }}</label>
-                <select
-                  v-model="settings.typeTarget"
-                  @change="resetRound(true)"
-                >
+                <select v-model="settings.typeTarget" @change="resetRound(true)">
                   <option value="nextLine">{{ t("typeNextLine") }}</option>
-                  <option value="currentLine">
-                    {{ t("typeCurrentLine") }}
-                  </option>
+                  <option value="currentLine">{{ t("typeCurrentLine") }}</option>
                 </select>
               </div>
 
               <div class="field">
                 <label>{{ t("normalization") }}</label>
-                <select
-                  v-model="settings.normalize"
-                  @change="resetRound(false)"
-                >
+                <select v-model="settings.normalize" @change="resetRound(false)">
                   <option value="strict">{{ t("normStrict") }}</option>
                   <option value="basic">{{ t("normBasic") }}</option>
                   <option value="punct">{{ t("normPunct") }}</option>
                 </select>
               </div>
 
-              <div
-                class="field"
-                v-if="
-                  settings.mode === 'type' &&
-                  settings.typeTarget === 'currentLine'
-                "
-              >
+              <div class="field" v-if="settings.mode === 'type' && settings.typeTarget === 'currentLine'">
                 <label>{{ t("showHintLine") }}</label>
-                <select
-                  v-model="settings.showHintLine"
-                  @change="resetRound(true)"
-                >
+                <select v-model="settings.showHintLine" @change="resetRound(true)">
                   <option value="on">{{ t("on") }}</option>
                   <option value="off">{{ t("off") }}</option>
                 </select>
               </div>
             </div>
 
-            <div class="row">
-              <button class="btn primary" @click="newPrompt()">
-                {{ t("newQuestion") }}
-              </button>
-              <button class="btn" @click="revealAnswer = !revealAnswer">
-                {{ revealAnswer ? t("hideAnswer") : t("showAnswer") }}
-              </button>
+            <div class="small" style="margin-top: 10px;">
+              {{ t("footer") }}
             </div>
           </div>
         </div>
-      </details>
-
-      <!-- PANEL: Trainer -->
-      <details class="card collapsible" open>
-        <summary class="card-summary">
-          <div class="card-title">{{ t("training") }}</div>
-          <div class="card-chevron" aria-hidden="true">▾</div>
-        </summary>
-
-        <div class="card-body">
-          <div v-if="!currentSong" class="empty">
-            {{ t("chooseSongFirst") }}
-          </div>
-
-          <div v-else class="trainer">
-            <div class="song-header">
-              <div>
-                <div class="now-playing">{{ currentSong.title }}</div>
-                <div class="small">
-                  <span v-if="currentSong.artist">{{
-                    currentSong.artist
-                  }}</span>
-                  <span v-if="currentSong.album">
-                    • {{ currentSong.album }}</span
-                  >
-                  <span>
-                    •
-                    {{ t("linesCount", { n: currentSong.lines.length }) }}</span
-                  >
-                </div>
-              </div>
-            </div>
-
-            <div class="prompt">
-              <div class="label">{{ t("prompt") }}</div>
-              <div class="line">{{ promptLine }}</div>
-            </div>
-
-            <div v-if="revealAnswer" class="answer">
-              <div class="label">{{ t("answer") }}</div>
-              <div class="line">{{ answerLine }}</div>
-            </div>
-
-            <!-- MODE: nextLine -->
-            <div v-if="settings.mode === 'nextLine'">
-              <h3>{{ t("chooseNextLine") }}</h3>
-
-              <div v-if="settings.nextLineInput === 'choice'" class="choices">
-                <button
-                  v-for="c in mcqChoices"
-                  :key="c.key"
-                  class="choice"
-                  :class="choiceClassText(c.text)"
-                  :disabled="roundLocked"
-                  @click="submitChoice(c.text)"
-                >
-                  {{ c.text }}
-                </button>
-              </div>
-
-              <div v-else>
-                <div class="row">
-                  <input
-                    v-model="typedInput"
-                    :disabled="roundLocked"
-                    :placeholder="t('typeHere')"
-                    @keydown.enter.prevent="submitTypedNextLine()"
-                  />
-                  <button
-                    class="btn primary"
-                    :disabled="roundLocked"
-                    @click="submitTypedNextLine()"
-                  >
-                    {{ t("check") }}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- MODE: cloze -->
-            <div v-else-if="settings.mode === 'cloze'">
-              <h3>{{ t("fillMissingWords") }}</h3>
-
-              <div class="cloze-line">
-                <span v-for="(tkn, i) in clozeTokens" :key="i">
-                  <template v-if="tkn.type === 'text'">{{
-                    tkn.value
-                  }}</template>
-                  <template v-else>
-                    <span class="blank">{{ tkn.filled ?? "____" }}</span>
-                  </template>
-                </span>
-              </div>
-
-              <div v-if="settings.clozeInput === 'choice'">
-                <div class="small">{{ t("clozeChoiceHint") }}</div>
-
-                <div class="row">
-                  <div class="field" style="flex: 1">
-                    <label>{{ t("blank") }}</label>
-                    <select
-                      v-model.number="activeBlankIndex"
-                      :disabled="roundLocked"
-                    >
-                      <option
-                        v-for="(_b, idx) in clozeBlanks"
-                        :key="idx"
-                        :value="idx"
-                      >
-                        {{
-                          t("blankOf", { i: idx + 1, n: clozeBlanks.length })
-                        }}
-                      </option>
-                    </select>
-                  </div>
-
-                  <div
-                    class="field"
-                    style="flex: 1"
-                    v-if="settings.showClozeTarget === 'on'"
-                  >
-                    <label>{{ t("targetWordHelper") }}</label>
-                    <input
-                      :value="clozeBlanks[activeBlankIndex]?.correct ?? ''"
-                      disabled
-                    />
-                  </div>
-                </div>
-
-                <div class="choices">
-                  <button
-                    v-for="w in clozeChoices"
-                    :key="w"
-                    class="choice"
-                    :class="choiceClassWord(w)"
-                    :disabled="roundLocked || isBlankFilled(activeBlankIndex)"
-                    @click="submitClozeChoice(w)"
-                  >
-                    {{ w }}
-                  </button>
-                </div>
-              </div>
-
-              <div v-else>
-                <div class="small">{{ t("clozeTypeHint") }}</div>
-                <div class="row">
-                  <input
-                    v-model="typedInput"
-                    :disabled="roundLocked"
-                    :placeholder="t('typeHere')"
-                    @keydown.enter.prevent="submitTypedCloze()"
-                  />
-                  <button
-                    class="btn primary"
-                    :disabled="roundLocked"
-                    @click="submitTypedCloze()"
-                  >
-                    {{ t("check") }}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- MODE: type -->
-            <div v-else>
-              <h3>{{ t("modeType") }}</h3>
-
-              <div
-                v-if="
-                  settings.typeTarget === 'currentLine' &&
-                  settings.showHintLine === 'on'
-                "
-                class="small"
-              >
-                {{ t("typeHintLine") }}
-              </div>
-
-              <div class="row">
-                <input
-                  v-model="typedInput"
-                  :disabled="roundLocked"
-                  :placeholder="t('typeHere')"
-                  @keydown.enter.prevent="submitTypedLine()"
-                />
-                <button
-                  class="btn primary"
-                  :disabled="roundLocked"
-                  @click="submitTypedLine()"
-                >
-                  {{ t("check") }}
-                </button>
-              </div>
-            </div>
-
-            <div class="feedback" v-if="feedback.message">
-              <div :class="['pill', feedback.ok ? 'ok' : 'bad']">
-                {{ feedback.message }}
-              </div>
-              <div class="small" v-if="feedback.details">
-                {{ feedback.details }}
-              </div>
-            </div>
-
-            <div class="stats">
-              <div class="stat">
-                <div class="label">{{ t("statsScore") }}</div>
-                <div class="value">
-                  {{
-                    t("scoreLine", { ok: stats.correct, total: stats.total })
-                  }}
-                </div>
-              </div>
-              <div class="stat" v-if="settings.mode === 'cloze'">
-                <div class="label">{{ t("statsClozeDifficulty") }}</div>
-                <div class="value">
-                  {{ t("missingWords", { n: clozeMissingCount }) }}
-                </div>
-              </div>
-              <div class="stat">
-                <div class="label">{{ t("statsLineIndex") }}</div>
-                <div class="value">
-                  {{
-                    t("indexOf", {
-                      i: currentIndex + 1,
-                      n: currentSong.lines.length,
-                    })
-                  }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </details>
+      </section>
     </main>
 
     <footer class="footer small">{{ t("footer") }}</footer>
@@ -627,6 +468,20 @@ type Messages = Record<string, string>;
 
 const LS_SONGS = "lyricsTrainer.songs.v1";
 const LS_SETTINGS = "lyricsTrainer.settings.v1";
+const showContinue = ref(false);
+const lastWasCorrect = ref(false);
+const lastClozePick = ref<{ key: string; ok: boolean } | null>(null);
+
+// Tweak these to taste
+const GOOD_MS = 1200; // show success feedback longer
+
+
+/**
+ * -----------------------------
+ * ✅ NEW: top-level app tab state
+ * -----------------------------
+ */
+const appTab = ref<"songs" | "train" | "settings">("songs");
 
 /**
  * -----------------------------
@@ -676,7 +531,7 @@ const settings = reactive<{
  */
 const messages: Record<Lang, Messages> = {
   en: {
-    appTitle: "Lyrics Trainer (Vue)",
+    appTitle: "Lyrics Trainer",
     appSubtitle:
       "Practice lyrics: next-line (MCQ), cloze, or typing. Source: paste or JSON.",
     resetSession: "Reset session",
@@ -790,6 +645,10 @@ const messages: Record<Lang, Messages> = {
     clozeCorrect: "Cloze: correct!",
     clozeIncorrect: "Cloze: incorrect.",
 
+    statsScore: "Score",
+    statsClozeDifficulty: "Cloze difficulty",
+    statsLineIndex: "Line index",
+
     scoreLine: "{ok} correct / {total} total",
     missingWords: "{n} words missing",
     indexOf: "{i} / {n}",
@@ -804,7 +663,8 @@ const messages: Record<Lang, Messages> = {
     provideTitle: "Please provide a title.",
     pasteLyricsFirst: "Paste lyrics first.",
     tooFewLines: "Too few lines. Make sure the text has multiple lines.",
-
+    continue: "Continue",
+    tryAgain: "Try again",
     footer:
       "Local in your browser (localStorage). No network. JSON import/export available.",
   },
@@ -926,6 +786,10 @@ const messages: Record<Lang, Messages> = {
     clozeCorrect: "Cloze: ¡correcto!",
     clozeIncorrect: "Cloze: incorrecto.",
 
+    statsScore: "Puntuación",
+    statsClozeDifficulty: "Dificultad cloze",
+    statsLineIndex: "Índice",
+
     scoreLine: "{ok} correctas / {total} total",
     missingWords: "{n} palabras omitidas",
     indexOf: "{i} / {n}",
@@ -940,7 +804,8 @@ const messages: Record<Lang, Messages> = {
     provideTitle: "Indica un título.",
     pasteLyricsFirst: "Primero pega la letra.",
     tooFewLines: "Muy pocas líneas. Asegúrate de tener varias líneas.",
-
+    continue: "Continuar",
+    tryAgain: "Intentar de nuevo",
     footer:
       "Local en tu navegador (localStorage). Sin red. Importación/exportación JSON disponible.",
   },
@@ -1043,6 +908,18 @@ const typedInput = ref("");
 const currentSong = computed(
   () => songs.value.find((s) => s.id === currentSongId.value) ?? null
 );
+
+/**
+ * ✅ Optional UX: when user selects a song, jump to Train tab.
+ * Comment out if you don't want it.
+ */
+function selectSong(id: string) {
+  currentSongId.value = id;
+  revealAnswer.value = false;
+  feedback.message = "";
+  feedback.details = "";
+  appTab.value = "train";
+}
 
 const sortedFilteredSongs = computed(() => {
   const q = songSearch.value.trim().toLowerCase();
@@ -1157,19 +1034,6 @@ function persistSettings() {
  * Songs actions
  * -----------------------------
  */
-function selectSong(id: string) {
-  currentSongId.value = id;
-  revealAnswer.value = false;
-  feedback.message = "";
-  feedback.details = "";
-}
-function deleteCurrentSong() {
-  if (!currentSong.value) return;
-  const id = currentSong.value.id;
-  songs.value = songs.value.filter((s) => s.id !== id);
-  currentSongId.value = songs.value.length ? songs.value[0].id : null;
-  resetRound(true);
-}
 function deleteSongById(id: string) {
   songs.value = songs.value.filter((x) => x.id !== id);
   if (currentSongId.value === id) {
@@ -1177,6 +1041,14 @@ function deleteSongById(id: string) {
   }
   resetRound(true);
 }
+
+function clearPasteForm() {
+  pasteForm.title = "";
+  pasteForm.artist = "";
+  pasteForm.album = "";
+  pasteForm.text = "";
+}
+
 function addSongFromPaste() {
   const title = pasteForm.title.trim();
   const text = pasteForm.text.trim();
@@ -1207,6 +1079,7 @@ function addSongFromPaste() {
 
   setFeedback(true, t("songAdded"));
   resetRound(true);
+  appTab.value = "train";
 }
 
 function importSongsJson() {
@@ -1217,8 +1090,8 @@ function importSongsJson() {
     const incoming: Song[] = Array.isArray(parsed)
       ? parsed
       : Array.isArray(parsed?.songs)
-      ? parsed.songs
-      : [];
+        ? parsed.songs
+        : [];
 
     const cleaned = incoming
       .map((x) => sanitizeSong(x))
@@ -1265,7 +1138,7 @@ function resetSession() {
   setFeedback(true, t("sessionReset"));
 }
 
-function advanceAfterCorrect(delayMs = 350) {
+function advanceAfterCorrect(delayMs = GOOD_MS) {
   setTimeout(() => newPrompt(), delayMs);
 }
 
@@ -1274,12 +1147,22 @@ function advanceAfterCorrect(delayMs = 350) {
  * Rounds
  * -----------------------------
  */
-function resetRound(resetIndex: boolean) {
+function resetRoundUiState() {
   roundLocked.value = false;
   typedInput.value = "";
   revealAnswer.value = false;
+
   feedback.message = "";
   feedback.details = "";
+
+  // if you added these:
+  showContinue.value = false;
+  lastWasCorrect.value = false;
+  lastClozePick.value = null;
+}
+
+function resetRound(resetIndex: boolean) {
+  resetRoundUiState();
 
   if (!currentSong.value) return;
   const n = currentSong.value.lines.length;
@@ -1302,11 +1185,8 @@ function resetRound(resetIndex: boolean) {
 
 function newPrompt() {
   if (!currentSong.value) return;
-  roundLocked.value = false;
-  typedInput.value = "";
-  revealAnswer.value = false;
-  feedback.message = "";
-  feedback.details = "";
+
+  resetRoundUiState();
 
   const n = currentSong.value.lines.length;
   if (settings.order === "sequence")
@@ -1336,7 +1216,6 @@ function buildExerciseArtifacts() {
   if (!currentSong.value) return;
 
   if (settings.mode === "nextLine") {
-    // only needed for MCQ, but safe to build always
     mcqChoices.value = buildNextLineChoices(currentIndex.value);
     clozeTokens.value = [];
     clozeChoices.value = [];
@@ -1374,8 +1253,6 @@ function buildExerciseArtifacts() {
  * -----------------------------
  * Submit handlers
  * -----------------------------
- * Key bugfix: evaluate MCQ correctness by text equality (normalized),
- * so duplicates in the song can't cause a false negative.
  */
 function submitChoice(chosenText: string) {
   if (roundLocked.value) return;
@@ -1389,15 +1266,14 @@ function submitChoice(chosenText: string) {
   if (ok) {
     stats.correct += 1;
     setFeedback(true, t("good"));
-    advanceAfterCorrect();
+    advanceAfterCorrect(); // uses GOOD_MS
   } else {
-    setFeedback(
-      false,
-      t("notGood"),
-      `${t("correctLabel")}: "${answerLine.value}"`
-    );
+    revealAnswer.value = false;
+    setFeedback(false, t("notGood"), `${t("correctLabel")}: "${answerLine.value}"`);
+    // showContinue is set by setFeedback(false,...)
   }
 }
+
 
 function submitTypedNextLine() {
   if (roundLocked.value) return;
@@ -1412,9 +1288,12 @@ function submitTypedNextLine() {
     roundLocked.value = true;
     advanceAfterCorrect();
   } else {
+    revealAnswer.value = true;
+    roundLocked.value = true;
     setFeedback(false, t("notGood"), `${t("expectedLabel")}: "${target}"`);
   }
 }
+
 
 function submitTypedLine() {
   if (roundLocked.value) return;
@@ -1430,6 +1309,8 @@ function submitTypedLine() {
     roundLocked.value = true;
     advanceAfterCorrect();
   } else {
+    revealAnswer.value = true;
+    roundLocked.value = true;
     setFeedback(false, t("notGood"), `${t("expectedLabel")}: "${target}"`);
   }
 }
@@ -1441,6 +1322,12 @@ function submitClozeChoice(word: string) {
 
   const ok = compareText(word, blank.correct, settings.normalize);
 
+  // ✅ remember what they clicked (use a stable normalized key)
+  lastClozePick.value = {
+    key: normalizeForCompare(word, "punct"),
+    ok,
+  };
+
   if (ok) {
     blank.filled = blank.correct;
     setFeedback(true, t("wordCorrect"));
@@ -1450,6 +1337,7 @@ function submitClozeChoice(word: string) {
       finalizeClozeRound(true);
     } else {
       activeBlankIndex.value = nextIdx;
+      lastClozePick.value = null; // ✅ reset for next blank
       clozeChoices.value = buildClozeChoices(
         clozeBlanks.value[nextIdx].correct,
         settings.optionCount
@@ -1461,8 +1349,10 @@ function submitClozeChoice(word: string) {
       t("wordIncorrect"),
       `${t("correctLabel")}: "${blank.correct}"`
     );
+    // keep roundLocked = false so they can try again
   }
 }
+
 
 function submitTypedCloze() {
   if (roundLocked.value) return;
@@ -1477,9 +1367,12 @@ function submitTypedCloze() {
     for (const b of clozeBlanks.value) b.filled = b.correct;
     finalizeClozeRound(true);
   } else {
+    revealAnswer.value = true;
     finalizeClozeRound(false, `${t("expectedLabel")}: "${missing.join(" ")}"`);
+    // finalizeClozeRound(false) currently locks; that's fine
   }
 }
+
 
 function finalizeClozeRound(ok: boolean, details?: string) {
   roundLocked.value = true;
@@ -1506,7 +1399,7 @@ function finalizeClozeRound(ok: boolean, details?: string) {
 
 /**
  * -----------------------------
- * Choice styling helpers (show correct/incorrect only after lock)
+ * Choice styling helpers
  * -----------------------------
  */
 function choiceClassText(choiceText: string) {
@@ -1518,14 +1411,37 @@ function choiceClassText(choiceText: string) {
 }
 
 function choiceClassWord(choiceWord: string) {
-  if (!roundLocked.value) return "";
+  // Only special-case cloze + choice input.
+  if (settings.mode !== "cloze" || settings.clozeInput !== "choice") {
+    // fallback to your old behavior (if you still need it anywhere)
+    if (!roundLocked.value) return "";
+    const blank = clozeBlanks.value[activeBlankIndex.value];
+    if (!blank) return "";
+    const ok =
+      normalizeForCompare(choiceWord, settings.normalize) ===
+      normalizeForCompare(blank.correct, settings.normalize);
+    return ok ? "correct" : "wrong";
+  }
+
   const blank = clozeBlanks.value[activeBlankIndex.value];
   if (!blank) return "";
-  const ok =
-    normalizeForCompare(choiceWord, settings.normalize) ===
-    normalizeForCompare(blank.correct, settings.normalize);
-  return ok ? "correct" : "wrong";
+
+  const choiceKey = normalizeForCompare(choiceWord, "punct");
+  const correctKey = normalizeForCompare(blank.correct, "punct");
+
+  // 1) If user clicked something, only style THAT option (correct or wrong).
+  if (lastClozePick.value && lastClozePick.value.key === choiceKey) {
+    return lastClozePick.value.ok ? "correct" : "wrong";
+  }
+
+  // 2) Optional: if you're revealing the answer, highlight the correct option too.
+  if (revealAnswer.value && choiceKey === correctKey) return "correct";
+
+  // 3) Otherwise: no styling for other options.
+  return "";
 }
+
+
 
 function isBlankFilled(idx: number): boolean {
   const blank = clozeBlanks.value[idx];
@@ -1542,14 +1458,12 @@ function findNextUnfilledBlankIndex(): number {
 /**
  * -----------------------------
  * Build MCQ choices (duplicate-safe)
- * - Excludes distractors that normalize to the correct answer.
- * - Ensures distractors are unique by normalized key.
  * -----------------------------
  */
 function buildNextLineChoices(index: number): Choice[] {
   const s = currentSong.value!;
   const correct = s.lines[index + 1];
-  const correctKey = normalizeForCompare(correct, "punct"); // stable key for de-duping
+  const correctKey = normalizeForCompare(correct, "punct");
 
   const optionCount = clamp(settings.optionCount, 3, 6);
 
@@ -1578,7 +1492,7 @@ function buildNextLineChoices(index: number): Choice[] {
 
 /**
  * -----------------------------
- * Cloze words choices (similar words)
+ * Cloze words choices
  * -----------------------------
  */
 function buildClozeChoices(correctWord: string, optionCount: number): string[] {
@@ -1760,7 +1674,27 @@ function buildWordCorpus(lines: string[]): string[] {
 function setFeedback(ok: boolean, message: string, details?: string) {
   feedback.ok = ok;
   feedback.message = message;
-  feedback.details = details;
+  // feedback.details = details;
+
+  lastWasCorrect.value = ok;
+  // show Continue only after a wrong answer
+  showContinue.value = !ok;
+}
+function continueAfterWrong() {
+  // user chooses to move on after seeing correct answer
+  revealAnswer.value = false;
+  showContinue.value = false;
+  roundLocked.value = false;
+  typedInput.value = "";
+  newPrompt();
+}
+function tryAgainSamePrompt() {
+  // keep same prompt/answer, just let them attempt again
+  showContinue.value = false;
+  roundLocked.value = false;
+  typedInput.value = "";
+  feedback.message = "";
+  feedback.details = "";
 }
 
 /**
@@ -1864,16 +1798,27 @@ watch(activeBlankIndex, () => {
   if (settings.clozeInput !== "choice") return;
   const b = clozeBlanks.value[activeBlankIndex.value];
   if (!b) return;
+
+  lastClozePick.value = null; // ✅ clear highlight when switching blanks
   clozeChoices.value = buildClozeChoices(b.correct, settings.optionCount);
 });
+
 </script>
 
 <style scoped>
-:global(html, body, #app) {
+html,
+body {
   height: 100%;
-  margin: 0;
-  background: #f6f6f6;
-  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0;
+}
+
+#app {
+  height: inherit;
+  width: inherit;
+  margin: inherit;
+  padding: 0 0 0 0;
 }
 
 :global(*, *::before, *::after) {
@@ -1885,12 +1830,11 @@ watch(activeBlankIndex, () => {
 }
 
 .app {
-  width: 100%;
-  margin: 0;
+  height: inherit;
+  width: inherit;
+  margin: 0 0;
   padding: 16px;
 
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
 
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
@@ -1901,21 +1845,12 @@ watch(activeBlankIndex, () => {
   background: #f6f6f6;
 }
 
-/* .header {
+.header {
+  flex: 0 0 auto;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 16px;
-} */
-.header {
-  flex: 0 0 auto;
-}
-
-main.grid {
-  flex: 1 1 auto;
-  min-height: 0; /* SUPER belangrijk voor flex scrolling */
-  overflow: hidden;
 }
 
 .header h1 {
@@ -1923,111 +1858,92 @@ main.grid {
   font-size: 22px;
   color: #111;
 }
+
 .sub {
   margin: 0;
   color: #444;
 }
+
 .header-actions {
   display: flex;
   gap: 10px;
 }
-
-/* .grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1.2fr;
-  gap: 16px;
-} */
-.grid {
-  flex: 1 1 auto;
-  min-height: 0;
-
-  display: grid;
-  grid-template-columns: 1fr; /* ✅ always 1 column */
-  gap: 16px;
-
-  padding: 16px;
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  box-sizing: border-box;
-}
-
-.collapsible {
-  padding: 0;
-}
-
-/* .card-summary {
-  list-style: none;
-  cursor: pointer;
-  user-select: none;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-
-  padding: 12px 14px;
-  border-bottom: 1px solid #eee;
-} */
-
-details.card[open] {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-details.card[open] > .card-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-}
-.card-summary {
-  padding: 10px 14px;   /* was 12–14 */
-  font-size: 14px;
-}
-.card {
-  display: block;
-  min-width: 0;
-  flex-direction: column;
-}
-
-.card-body {
-  min-width: 0;
-  overflow: auto;
-}
-
-.card-summary::-webkit-details-marker {
-  display: none;
-}
-.card-title {
-  font-weight: 750;
-  font-size: 14px;
-}
-.card-chevron {
-  font-size: 14px;
-  opacity: 0.75;
-  transform: rotate(0deg);
-  transition: transform 120ms ease;
-}
-details[open] .card-chevron {
-  transform: rotate(180deg);
-}
-
-/* .card-body {
-  padding: 14px;
-} */
 
 .small {
   font-size: 12px;
   color: #555;
 }
 
+/* ✅ NEW: top-level tabs */
+.app-tabs {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+}
+
+.app-tab {
+  border: 1px solid #d6d6d6;
+  background: #f7f7f7;
+  color: #111;
+  padding: 9px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.app-tab.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+/* Card */
+.card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.card-head {
+  padding: 10px 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.card-title {
+  font-weight: 750;
+  font-size: 14px;
+}
+
+.card-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 14px;
+}
+
+/* Shared inputs */
 .row {
   display: flex;
   gap: 10px;
   align-items: center;
   margin: 10px 0;
 }
-.row > label {
+
+.row>label {
   width: 110px;
   color: #444;
   font-size: 13px;
@@ -2045,10 +1961,12 @@ textarea {
   background: #fff;
   color: #111;
 }
+
 input::placeholder,
 textarea::placeholder {
   color: #777;
 }
+
 textarea {
   resize: vertical;
 }
@@ -2062,41 +1980,48 @@ textarea {
   cursor: pointer;
   font-size: 13px;
 }
+
 .btn:hover {
   background: #eaeaea;
 }
+
 .btn.primary {
   background: #111;
   color: #fff;
   border-color: #111;
 }
+
 .btn.primary:hover {
   background: #1a1a1a;
 }
+
 .btn.danger {
   background: #fff;
   color: #111;
   border-color: #e2b4b4;
 }
+
 .btn.danger:hover {
   background: #fff5f5;
 }
 
+/* Inner tabs (source tabs) */
 .tabs {
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
   flex-wrap: wrap;
 }
+
 .tab {
   border: 1px solid #d6d6d6;
   background: #f7f7f7;
   color: #111;
   padding: 8px 10px;
-  /* border-radius: 999px; */
   cursor: pointer;
   font-size: 13px;
 }
+
 .tab.active {
   background: #111;
   color: #fff;
@@ -2107,6 +2032,7 @@ textarea {
   margin-top: 8px;
 }
 
+/* Songs list */
 .song-row {
   display: flex;
   align-items: center;
@@ -2122,7 +2048,7 @@ textarea {
 }
 
 .song-main {
-  flex: 1; /* neemt alle ruimte */
+  flex: 1;
   text-align: left;
   border: 0;
   background: transparent;
@@ -2146,7 +2072,7 @@ textarea {
   border-radius: 10px;
   border: 1px solid #d6d6d6;
   background: #f2f2f2;
-  color: #111; /* belangrijk voor currentColor */
+  color: #111;
   cursor: pointer;
   padding: 0;
 }
@@ -2164,18 +2090,6 @@ textarea {
   background: #fff5f5;
 }
 
-/* SVG zichtbaar maken */
-.icon-btn .icon {
-  width: 18px;
-  height: 18px;
-  display: block;
-}
-
-/* Fallback standaard uit; alleen aan als je SVG weglaat */
-.icon-fallback {
-  display: none;
-}
-
 .song-list {
   display: flex;
   flex-direction: column;
@@ -2186,28 +2100,19 @@ textarea {
   padding-right: 6px;
 }
 
-.song-item {
-  text-align: left;
-  border: 1px solid #e8e8e8;
-  background: #fff;
-  border-radius: 10px;
-  padding: 10px;
-  cursor: pointer;
-  color: #111;
-}
-.song-item:hover {
-  background: #f7f7f7;
-}
-.song-item.selected {
-  border-color: #111;
-}
 .song-title {
   font-weight: 650;
 }
+
 .song-meta {
   font-size: 12px;
   color: #555;
   margin-top: 2px;
+}
+
+/* Trainer */
+.trainer {
+  margin-top: 4px;
 }
 
 .song-header {
@@ -2217,34 +2122,10 @@ textarea {
   gap: 12px;
   margin-bottom: 10px;
 }
+
 .now-playing {
   font-weight: 700;
   font-size: 16px;
-}
-
-.settings-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-@media (max-width: 100%) {
-  .settings-grid {
-    grid-template-columns: 1fr;
-  }
-}
-.field label {
-  display: block;
-  font-size: 12px;
-  color: #555;
-  margin: 0 0 6px 2px;
-}
-.field input,
-.field select {
-  width: 100%;
-}
-
-.trainer {
-  margin-top: 4px;
 }
 
 .prompt,
@@ -2257,11 +2138,13 @@ textarea {
   margin-bottom: 10px;
   color: #111;
 }
+
 .label {
   font-size: 12px;
   color: #555;
   margin-bottom: 6px;
 }
+
 .line {
   font-size: 16px;
   white-space: pre-wrap;
@@ -2274,6 +2157,7 @@ textarea {
   gap: 8px;
   margin-top: 10px;
 }
+
 .choice {
   border: 1px solid #e2e2e2;
   background: #fff;
@@ -2284,21 +2168,28 @@ textarea {
   text-align: left;
   font-size: 14px;
 }
+
 .choice:hover {
   background: #f7f7f7;
 }
+
 .choice.correct {
   border-color: #2a7;
   background: #f2fff9;
   color: #111;
 }
+
 .choice.wrong {
-  opacity: 0.85;
+  border-color: #d66;
+  background: #fff4f4;
+  color: #111;
+  opacity: 1;
 }
 
 .feedback {
   margin: 12px 0;
 }
+
 .pill {
   display: inline-block;
   padding: 6px 10px;
@@ -2307,10 +2198,12 @@ textarea {
   border: 1px solid #d6d6d6;
   color: #111;
 }
+
 .pill.ok {
   border-color: #2a7;
   background: #f2fff9;
 }
+
 .pill.bad {
   border-color: #d66;
   background: #fff4f4;
@@ -2322,11 +2215,13 @@ textarea {
   gap: 10px;
   margin-top: 14px;
 }
-@media (max-width: 100%) {
+
+@media (max-width: 700px) {
   .stats {
     grid-template-columns: 1fr;
   }
 }
+
 .stat {
   border: 1px solid #e9e9e9;
   border-radius: 12px;
@@ -2334,6 +2229,7 @@ textarea {
   background: #fff;
   color: #111;
 }
+
 .value {
   font-weight: 650;
   color: #111;
@@ -2366,6 +2262,31 @@ textarea {
   border-radius: 12px;
   color: #444;
   background: #fff;
+}
+
+/* Settings */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 700px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin: 0 0 6px 2px;
+}
+
+.field input,
+.field select {
+  width: 100%;
 }
 
 .footer {
