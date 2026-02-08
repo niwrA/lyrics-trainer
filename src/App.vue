@@ -112,15 +112,14 @@
 
             <label>{{ t("pasteFullLyrics") }}</label>
             <textarea v-model="pasteForm.text" rows="12" :placeholder="t('pastePlaceholder')"></textarea>
-
-            <div class="row">
-              <button class="btn primary" @click="addSongFromPaste()">{{ t("addToLibrary") }}</button>
+            <div class="row sticky-actions">
+              <button class="btn primary" @click="addSongFromPaste()">
+                {{ t("addToLibrary") }}
+              </button>
               <button class="btn" @click="clearPasteForm()">
                 {{ t("clear") }}
               </button>
-
             </div>
-
             <div class="small">{{ t("pasteHint") }}</div>
           </div>
 
@@ -1812,6 +1811,8 @@ body {
   width: 100%;
   max-width: 100%;
   margin: 0 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 #app {
@@ -1831,11 +1832,12 @@ body {
 
 .app {
   height: inherit;
+  min-height: 100dvh;
   width: inherit;
   margin: 0 0;
   padding: 16px;
 
-  overflow: hidden;
+  overflow: auto;
 
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
     Noto Sans, Helvetica, Arial, sans-serif;
@@ -1903,8 +1905,13 @@ body {
 .main {
   flex: 1 1 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow: auto;
   margin-top: 12px;
+}
+
+main.grid {
+  overflow: visible;
+  min-height: auto;
 }
 
 /* Card */
@@ -2216,10 +2223,14 @@ textarea {
   margin-top: 14px;
 }
 
-@media (max-width: 700px) {
-  .stats {
-    grid-template-columns: 1fr;
-  }
+.sticky-actions {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  padding: 10px 0;
+  margin: 10px 0 0 0;
+  border-top: 1px solid #eee;
+  z-index: 5;
 }
 
 .stat {
@@ -2267,15 +2278,36 @@ textarea {
 /* Settings */
 .settings-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 10px;
 }
 
-@media (max-width: 700px) {
+@media (min-height: 700px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
   .settings-grid {
     grid-template-columns: 1fr;
   }
+
+  .app {
+    overflow: auto;
+    /* was hidden */
+  }
+
+  .main {
+    overflow: auto;
+    /* allow page-level scrolling */
+    min-height: auto;
+  }
+
+  .card-body {
+    overflow: visible;
+    /* avoid nested scroll on mobile */
+  }
 }
+
 
 .field label {
   display: block;
