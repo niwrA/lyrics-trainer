@@ -28,6 +28,11 @@
         :class="{ active: appTab === 'settings' }" @click="appTab = 'settings'">
         {{ t("exerciseAndOptions") }}
       </button>
+
+      <button class="app-tab" role="tab" :aria-selected="appTab === 'about'" :class="{ active: appTab === 'about' }"
+        @click="appTab = 'about'">
+        {{ t("tabAbout") }}
+      </button>
     </nav>
 
     <main class="main" role="tabpanel">
@@ -309,7 +314,7 @@
       </section>
 
       <!-- TAB: Settings -->
-      <section v-else class="card">
+      <section v-else-if="appTab === 'settings'" class="card">
         <div class="card-head">
           <div class="card-title">{{ t("exerciseAndOptions") }}</div>
         </div>
@@ -430,6 +435,17 @@
           </div>
         </div>
       </section>
+
+      <!-- TAB: About -->
+      <section v-else class="about">
+        <div class="card-body">
+          <h2 class="about-title">{{ t("aboutTitle") }}</h2>
+          <p class="about-p">{{ t("aboutP1") }}</p>
+          <p class="about-p">{{ t("aboutP2") }}</p>
+          <p class="about-p">{{ t("aboutP3") }}</p>
+        </div>
+      </section>
+
     </main>
 
     <footer class="footer small">{{ t("footer") }}</footer>
@@ -480,7 +496,7 @@ const GOOD_MS = 1200; // show success feedback longer
  * ✅ NEW: top-level app tab state
  * -----------------------------
  */
-const appTab = ref<"songs" | "train" | "settings">("songs");
+const appTab = ref<"songs" | "train" | "settings" | "about">("songs");
 
 /**
  * -----------------------------
@@ -581,6 +597,15 @@ const messages: Record<Lang, Messages> = {
     modeNextLine: "Next line",
     modeCloze: "Fill blanks (cloze)",
     modeType: "Type (whole line)",
+
+    tabAbout: "About",
+    aboutTitle: "About Lyrics Trainer",
+    aboutP1:
+      "Lyrics Trainer is a free, browser-based tool for practicing song lyrics. You can train with next-line questions, fill-in-the-blanks (cloze), and typing exercises.",
+    aboutP2:
+      "All lyrics are provided by you and stored locally in your browser. No accounts are required, nothing is uploaded, and no tracking or analytics are used.",
+    aboutP3:
+      "It is designed for language learners, singers, performers, and anyone who wants to memorize lyrics more effectively.",
 
     order: "Order",
     orderSequence: "In order",
@@ -721,6 +746,15 @@ const messages: Record<Lang, Messages> = {
     modeNextLine: "Siguiente línea",
     modeCloze: "Completar huecos (cloze)",
     modeType: "Escribir (línea completa)",
+
+    tabAbout: "Acerca de",
+    aboutTitle: "Acerca de Lyrics Trainer",
+    aboutP1:
+      "Lyrics Trainer es una herramienta gratuita en el navegador para practicar letras. Puedes entrenar con preguntas de la siguiente línea, completar huecos (cloze) y ejercicios de escritura.",
+    aboutP2:
+      "Todas las letras las proporcionas tú y se guardan localmente en tu navegador. No se necesitan cuentas, no se sube nada y no se usa seguimiento ni analítica.",
+    aboutP3:
+      "Está pensado para estudiantes de idiomas, cantantes, intérpretes y cualquiera que quiera memorizar letras de forma más eficaz.",
 
     order: "Orden",
     orderSequence: "En orden",
@@ -2321,6 +2355,30 @@ textarea {
 .field input,
 .field select {
   width: 100%;
+}
+
+.about {
+  margin-top: 24px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.about h2 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.about p {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.about p:last-child {
+  margin-bottom: 0;
 }
 
 .footer {
