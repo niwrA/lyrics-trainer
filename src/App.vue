@@ -1116,7 +1116,9 @@ function importSongsJson() {
 
 function exportSongsJson() {
   const payload = JSON.stringify(songs.value, null, 2);
-  downloadText(payload, "songs.json", "application/json");
+  // BOM helps some programs detect UTF-8 correctly
+  const withBom = "\uFEFF" + payload;
+  downloadText(withBom, "songs.json", "application/json;charset=utf-8");
   setFeedback(true, t("jsonExportStarted"));
 }
 
