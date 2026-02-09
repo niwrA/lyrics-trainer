@@ -1,46 +1,42 @@
 <template>
   <div class="app">
-    <header class="header">
-      <div>
-        <h1>{{ t("appTitle") }}</h1>
-        <p class="sub">{{ t("appSubtitle") }}</p>
+    <div class="topbar">
+      <div class="topbar-row">
+        <div class="brand">
+          <div class="brand-title">{{ t("appTitle") }}</div>
+          <!-- <div class="brand-sub">{{ t("appSubtitle") }}</div> -->
+        </div>
       </div>
 
-      <div class="header-actions">
-        <button class="btn" @click="resetSession()">{{ t("resetSession") }}</button>
-        <button class="btn" @click="exportSongsJson()">{{ t("exportSongsJson") }}</button>
-      </div>
-    </header>
+      <nav class="topbar-tabs" role="tablist" aria-label="App sections">
+        <button class="topbar-tab" role="tab" :aria-selected="appTab === 'songs'"
+          :class="{ active: appTab === 'songs' }" @click="appTab = 'songs'">
+          {{ t("sourceAndSongs") }}
+        </button>
 
-    <!-- ✅ NEW: Top-level app tabs -->
-    <nav class="app-tabs" role="tablist" aria-label="App sections">
-      <button class="app-tab" role="tab" :aria-selected="appTab === 'songs'" :class="{ active: appTab === 'songs' }"
-        @click="appTab = 'songs'">
-        {{ t("sourceAndSongs") }}
-      </button>
+        <button class="topbar-tab" role="tab" :aria-selected="appTab === 'train'"
+          :class="{ active: appTab === 'train' }" @click="appTab = 'train'">
+          {{ t("training") }}
+        </button>
 
-      <button class="app-tab" role="tab" :aria-selected="appTab === 'train'" :class="{ active: appTab === 'train' }"
-        @click="appTab = 'train'">
-        {{ t("training") }}
-      </button>
+        <button class="topbar-tab" role="tab" :aria-selected="appTab === 'settings'"
+          :class="{ active: appTab === 'settings' }" @click="appTab = 'settings'">
+          {{ t("exerciseAndOptions") }}
+        </button>
 
-      <button class="app-tab" role="tab" :aria-selected="appTab === 'settings'"
-        :class="{ active: appTab === 'settings' }" @click="appTab = 'settings'">
-        {{ t("exerciseAndOptions") }}
-      </button>
-
-      <button class="app-tab" role="tab" :aria-selected="appTab === 'about'" :class="{ active: appTab === 'about' }"
-        @click="appTab = 'about'">
-        {{ t("tabAbout") }}
-      </button>
-    </nav>
+        <button class="topbar-tab" role="tab" :aria-selected="appTab === 'about'"
+          :class="{ active: appTab === 'about' }" @click="appTab = 'about'">
+          {{ t("tabAbout") }}
+        </button>
+      </nav>
+    </div>
 
     <main class="main" role="tabpanel">
       <!-- TAB: Songs -->
       <section v-if="appTab === 'songs'" class="card">
-        <div class="card-head">
+        <!-- <div class="card-head">
           <div class="card-title">{{ t("sourceAndSongs") }}</div>
-        </div>
+        </div> -->
 
         <div class="card-body">
           <div class="tabs">
@@ -53,6 +49,8 @@
             <button class="tab" :class="{ active: sourceTab === 'json' }" @click="sourceTab = 'json'">
               {{ t("tabJsonImport") }}
             </button>
+            <!-- todo: give tab with explanation of what export does etc. -->
+            <button class="tab" @click="exportSongsJson()">{{ t("exportSongsJson") }}</button>
           </div>
 
           <div v-if="sourceTab === 'library'" class="panel">
@@ -147,9 +145,9 @@
 
       <!-- TAB: Train -->
       <section v-else-if="appTab === 'train'" class="card">
-        <div class="card-head">
+        <!-- <div class="card-head">
           <div class="card-title">{{ t("training") }}</div>
-        </div>
+        </div> -->
 
         <div class="card-body">
           <div v-if="!currentSong" class="empty">{{ t("chooseSongFirst") }}</div>
@@ -294,7 +292,7 @@
             <div class="stats">
               <div class="stat">
                 <div class="label">{{ t("statsScore") }}</div>
-                <div class="value">{{ t("scoreLine", { ok: stats.correct, total: stats.total }) }}</div>
+                <div class="value">{{ t("scoreLineShort", { ok: stats.correct, total: stats.total }) }}</div>
               </div>
 
               <div class="stat" v-if="settings.mode === 'cloze'">
@@ -315,9 +313,9 @@
 
       <!-- TAB: Settings -->
       <section v-else-if="appTab === 'settings'" class="card">
-        <div class="card-head">
+        <!-- <div class="card-head">
           <div class="card-title">{{ t("exerciseAndOptions") }}</div>
-        </div>
+        </div> -->
 
         <div class="card-body">
           <div v-if="!currentSong" class="empty">{{ t("chooseSongFirst") }}</div>
@@ -453,7 +451,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref, watch, Ref } from "vue";
 
 /**
  * -----------------------------
@@ -496,7 +494,8 @@ const GOOD_MS = 1200; // show success feedback longer
  * ✅ NEW: top-level app tab state
  * -----------------------------
  */
-const appTab = ref<"songs" | "train" | "settings" | "about">("songs");
+type AppTab = "songs" | "train" | "settings" | "about";
+const appTab: Ref<AppTab> = ref("songs");
 
 /**
  * -----------------------------
@@ -673,7 +672,8 @@ const messages: Record<Lang, Messages> = {
     statsClozeDifficulty: "Cloze difficulty",
     statsLineIndex: "Line index",
 
-    scoreLine: "{ok} correct / {total} total",
+    scoreLine: "{ok}/{total} (correct / total)",
+    scoreLineShort: "{ok} / {total}",
     missingWords: "{n} words missing",
     indexOf: "{i} / {n}",
 
@@ -823,7 +823,8 @@ const messages: Record<Lang, Messages> = {
     statsClozeDifficulty: "Dificultad cloze",
     statsLineIndex: "Índice",
 
-    scoreLine: "{ok} correctas / {total} total",
+    scoreLine: "{ok}/{total} (correctas/total)",
+    scoreLineShort: "{ok} / {total}",
     missingWords: "{n} palabras omitidas",
     indexOf: "{i} / {n}",
 
@@ -1153,7 +1154,8 @@ function exportSongsJson() {
   // BOM helps some programs detect UTF-8 correctly
   const withBom = "\uFEFF" + payload;
   downloadText(withBom, "songs.json", "application/json;charset=utf-8");
-  setFeedback(true, t("jsonExportStarted"));
+  // todo: this feedback is on another component, so do something once we make an export tab
+  // setFeedback(true, t("jsonExportStarted"));
 }
 
 /**
@@ -1846,7 +1848,7 @@ body {
   height: 100%;
   width: 100%;
   max-width: 100%;
-  margin: 0 0;
+  margin: 0;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -1862,88 +1864,202 @@ body {
   box-sizing: border-box;
 }
 
-:root {
-  color-scheme: light;
+:global(:root) {
+  --topbar-bg: linear-gradient(90deg, #0a3cff, #2563eb);
+  --topbar-text: #ffffff;
+  --topbar-subtext: rgba(255, 255, 255, 0.85);
+
+  --tab-inactive-bg: rgba(0, 0, 0, 0.18);
+  --tab-inactive-text: #ffffff;
+
+  --tab-active-bg: #f6f6f6;
+  --tab-active-text: #111111;
+
+  --content-bg: #f6f6f6;
 }
 
 .app {
-  height: inherit;
+  /* Layout */
   min-height: 100dvh;
-  width: inherit;
-  margin: 0 0;
-  padding: 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 
-  overflow: auto;
+  /* IMPORTANT: no outer padding */
+  padding: 0;
+  margin: 0;
 
+  /* Typography */
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
     Noto Sans, Helvetica, Arial, sans-serif;
-
   line-height: 1.35;
-  color: #111;
+
+  /* Base colors (light content area) */
   background: #f6f6f6;
+  color: #111;
+
+  /* Define theme variables HERE so scoped CSS works */
+  --topbar-bg: linear-gradient(140deg, #0a3cff, #3976f9);
+  --topbar-text: #ffffff;
+  --topbar-subtext: rgba(255, 255, 255, 0.85);
+
+  --tab-inactive-bg: rgba(0, 0, 0, 0.18);
+  --tab-inactive-text: #ffffff;
+
+  --tab-active-bg: #f6f6f6;
+  --tab-active-text: #111111;
+
+  --content-bg: #f6f6f6;
+}
+
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
+  background: var(--topbar-bg);
+  color: var(--topbar-text);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.topbar-btn {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.18);
+  color: #fff;
+
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.topbar-btn:hover {
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.topbar .btn.primary {
+  background: #000000;
+  border-color: #000000;
 }
 
 .header {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+  padding: 14px 16px 8px 16px;
 }
 
 .header h1 {
-  margin: 0 0 6px 0;
-  font-size: 22px;
-  color: #111;
+  color: var(--topbar-text);
 }
 
 .sub {
-  margin: 0;
-  color: #444;
+  color: var(--topbar-subtext);
 }
 
-.header-actions {
-  display: flex;
-  gap: 10px;
+/* optional: make header buttons fit the bar */
+.header-actions .btn {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.30);
+  color: #fff;
 }
+
+.header-actions .btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.header-actions .btn.primary {
+  background: rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.30);
+}
+
 
 .small {
   font-size: 12px;
   color: #555;
 }
 
-/* ✅ NEW: top-level tabs */
+.topbar-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 6px;
+
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.topbar-tab {
+  appearance: none;
+  border: 0;
+  border-radius: 0;       /* 🚫 no rounding */
+
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+
+.topbar-tab:hover {
+  background: rgba(0, 0, 0, 0.10);
+}
+
+.topbar-tab.active {
+  color: #ffffff;
+  background: transparent;          /* no block */
+  border: 0px 2px 0px 0px solid #ffffff; /* classic tab indicator */
+}
+
 .app-tabs {
   display: flex;
-  gap: 10px;
-  margin-top: 12px;
-  padding: 10px;
-  background: #fff;
-  border: 1px solid #e8e8e8;
-  border-radius: 14px;
+  gap: 6px;
+  padding: 0 12px;
+  background: transparent;
 }
 
 .app-tab {
-  border: 1px solid #d6d6d6;
-  background: #f7f7f7;
-  color: #111;
-  padding: 9px 12px;
-  cursor: pointer;
+  padding: 10px 14px;
   font-size: 13px;
+
+  border-radius: 10px 10px 0 0;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-bottom: 0;
+
+  background: var(--tab-inactive-bg);
+  color: var(--tab-inactive-text);
+
+  cursor: pointer;
+}
+
+.app-tab:hover {
+  background: rgba(0, 0, 0, 0.28);
 }
 
 .app-tab.active {
-  background: #111;
-  color: #fff;
-  border-color: #111;
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 .main {
   flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-  margin-top: 12px;
+  padding: 0px;
+  /* content spacing lives here */
+  background: #f6f6f6;
+  border-top: 1px solid #e8e8e8;
 }
+
 
 main.grid {
   overflow: visible;
@@ -1952,14 +2068,14 @@ main.grid {
 
 /* Card */
 .card {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  background: #fff;
-  border: 1px solid #e8e8e8;
-  border-radius: 14px;
-  overflow: hidden;
+  border-radius: 0;
+  /* remove rounded corners */
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-top: 1px solid #e8e8e8;
 }
+
 
 .card-head {
   padding: 10px 14px;
@@ -1975,7 +2091,7 @@ main.grid {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-  padding: 14px;
+  padding: 0px;
 }
 
 /* Shared inputs */
@@ -2159,7 +2275,7 @@ textarea {
 }
 
 .song-header {
-  display: flex;
+  /* display: flex; */
   justify-content: space-between;
   align-items: center;
   gap: 12px;
