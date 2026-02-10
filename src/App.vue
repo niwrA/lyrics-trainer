@@ -551,7 +551,7 @@ const messages: Record<Lang, Messages> = {
     resetSession: "Reset session",
     exportSongsJson: "Export songs JSON",
 
-    sourceAndSongs: "Source & songs",
+    sourceAndSongs: "Songs",
     tabLibrary: "JSON library",
     tabPaste: "Paste lyrics",
     tabJsonImport: "JSON import",
@@ -590,7 +590,7 @@ const messages: Record<Lang, Messages> = {
     chooseSongFirst: "First choose a song from the library, or add one.",
     delete: "Delete",
 
-    exerciseAndOptions: "Exercise & options",
+    exerciseAndOptions: "Settings",
     uiLanguage: "UI language",
     exercise: "Exercise",
     modeNextLine: "Next line",
@@ -699,7 +699,7 @@ const messages: Record<Lang, Messages> = {
     resetSession: "Reiniciar sesión",
     exportSongsJson: "Exportar songs JSON",
 
-    sourceAndSongs: "Fuente y canciones",
+    sourceAndSongs: "Canciones",
     tabLibrary: "Biblioteca JSON",
     tabPaste: "Pegar letra",
     tabJsonImport: "Importar JSON",
@@ -740,7 +740,7 @@ const messages: Record<Lang, Messages> = {
     chooseSongFirst: "Primero elige una canción de la biblioteca o añade una.",
     delete: "Eliminar",
 
-    exerciseAndOptions: "Ejercicio y opciones",
+    exerciseAndOptions: "Opciones",
     uiLanguage: "Idioma de la UI",
     exercise: "Ejercicio",
     modeNextLine: "Siguiente línea",
