@@ -1,0 +1,158 @@
+[
+  {
+    "id": "song-001",
+    "title": "La Bamba",
+    "artist": "Ritchie Valens",
+    "album": "La Bamba",
+    "createdAt": "2026-02-15T10:30:00.000Z",
+    "lines": [
+      "Para bailar la bamba",
+      "Se necesita una poca de gracia",
+      "Una poca de gracia y otra cosita",
+      "Ay, arriba y arriba",
+      "Yo no soy marinero",
+      "Yo no soy marinero, soy capitán"
+    ],
+    "vocabulary": [
+      {
+        "word": "bailar",
+        "translation": "to dance",
+        "explanation": "Verb meaning to move your body rhythmically to music"
+      },
+      {
+        "word": "bamba",
+        "translation": "bamba",
+        "explanation": "A lively Mexican and Puerto Rican folk dance and music genre"
+      },
+      {
+        "word": "necesita",
+        "translation": "needs",
+        "explanation": "Third person singular present of necesitar (to need)"
+      },
+      {
+        "word": "poca",
+        "translation": "a bit, a little",
+        "explanation": "Small amount or quantity of something"
+      },
+      {
+        "word": "gracia",
+        "translation": "grace, charm",
+        "explanation": "Elegance, style, or skill in one's movements or behavior"
+      },
+      {
+        "word": "cosita",
+        "translation": "little thing",
+        "explanation": "Diminutive form of cosa (thing); something small or trivial"
+      },
+      {
+        "word": "arriba",
+        "translation": "up",
+        "explanation": "Exclamation meaning 'up!' or 'come on!'; also means upward direction"
+      },
+      {
+        "word": "marinero",
+        "translation": "sailor",
+        "explanation": "A person who works on a ship or vessel"
+      },
+      {
+        "word": "capitán",
+        "translation": "captain",
+        "explanation": "A senior officer in charge of a ship or military unit"
+      }
+    ]
+  },
+  {
+    "id": "song-002",
+    "title": "El Loco",
+    "artist": "El Cuarteto de Nos",
+    "album": "Raro",
+    "createdAt": "2026-02-15T11:00:00.000Z",
+    "lines": [
+      "Soy muy loco",
+      "Soy muy loco, muy loco, muy loco",
+      "Yo me escapé de un manicomio",
+      "Me encontré con mi vieja"
+    ],
+    "vocabulary": [
+      {
+        "word": "loco",
+        "translation": "crazy, mad",
+        "explanation": "Someone who is mentally unstable or behaves in an erratic way"
+      },
+      {
+        "word": "escapé",
+        "translation": "I escaped",
+        "explanation": "Past tense of escapar (to escape); means to get away from a place"
+      },
+      {
+        "word": "manicomio",
+        "translation": "mental hospital, asylum",
+        "explanation": "A hospital or institution for people with mental illness"
+      },
+      {
+        "word": "encontré",
+        "translation": "I found, I met",
+        "explanation": "Past tense of encontrar (to find); can also mean to encounter"
+      },
+      {
+        "word": "vieja",
+        "translation": "old woman, mom (slang)",
+        "explanation": "Literally an old woman; colloquially used to mean mother or girlfriend"
+      }
+    ]
+  },
+  {
+    "id": "song-003",
+    "title": "Despierta",
+    "artist": "Grupo Mania",
+    "createdAt": "2026-02-15T11:15:00.000Z",
+    "lines": [
+      "Despierta, que el mundo te espera",
+      "Con mil caminos para recorrer",
+      "No pierdas tiempo en cosas vanas",
+      "Persigue tus sueños sin cesar"
+    ],
+    "vocabulary": [
+      {
+        "word": "despierta",
+        "translation": "wake up",
+        "explanation": "Imperative form of despertar (to wake up); can also mean 'be aware'"
+      },
+      {
+        "word": "espera",
+        "translation": "waits, is waiting",
+        "explanation": "Third person singular of esperar (to wait); patience or hope"
+      },
+      {
+        "word": "recorrer",
+        "translation": "to travel, to go through",
+        "explanation": "To move or travel through a place or distance"
+      },
+      {
+        "word": "pierdas",
+        "translation": "lose, waste",
+        "explanation": "Second person singular subjunctive of perder (to lose)"
+      },
+      {
+        "word": "vanas",
+        "translation": "vain, empty, futile",
+        "explanation": "Meaningless or without substance; wasteful of time"
+      },
+      {
+        "word": "persigue",
+        "translation": "pursue, chase",
+        "explanation": "Second person singular of perseguir (to pursue or chase after)"
+      },
+      {
+        "word": "sueños",
+        "translation": "dreams",
+        "explanation": "Plural of sueño; goals and aspirations or what you see when sleeping"
+      },
+      {
+        "word": "cesar",
+        "translation": "to stop, to cease",
+        "explanation": "To end or stop doing something (from the verb cesar)"
+      }
+    ]
+  }
+]

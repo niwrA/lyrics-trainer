@@ -55,6 +55,16 @@
 
           <div v-if="sourceTab === 'library'" class="panel">
             <div class="row">
+              <label>{{ t("songSets") }}</label>
+              <select v-model="currentSetId">
+                <option v-for="set in songSets" :key="set.id" :value="set.id">
+                  {{ set.name }} ({{ set.songs.length }})
+                </option>
+              </select>
+              <button class="btn" @click="createNewSet()">{{ t("newSet") }}</button>
+            </div>
+
+            <div class="row">
               <label>{{ t("sortBy") }}</label>
               <select v-model="songSort.key">
                 <option value="title">{{ t("sortTitle") }}</option>
@@ -83,6 +93,17 @@
                     <span v-if="s.album">• {{ s.album }}</span>
                     <span>• {{ t("linesCount", { n: s.lines.length }) }}</span>
                   </div>
+                </button>
+
+                <button class="icon-btn primary" type="button" :aria-label="t('edit')" :title="t('edit')"
+                  @click.stop="startEditSong(s.id)">
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                    <path
+                      d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"
+                      fill="currentColor" />
+                    <path d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                      fill="currentColor" />
+                  </svg>
                 </button>
 
                 <button class="icon-btn danger" type="button" :aria-label="t('delete')" :title="t('delete')"
@@ -142,6 +163,117 @@
           </div>
         </div>
       </section>
+
+      <!-- MODAL: Edit Song -->
+      <div v-if="editingSongId" class="modal-overlay" @click.self="editingSongId = null">
+        <div class="modal-card modal-card-large">
+          <div class="modal-header">
+            <div class="modal-header-content">
+              <h2>{{ t("editSongJson") }}</h2>
+              <a class="help-link" href="/json-format-help.html" target="_blank" rel="noopener noreferrer" :title="t('jsonFormatHelp')">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" />
+                  <text x="12" y="16" text-anchor="middle" font-size="14" font-weight="bold" fill="currentColor">?</text>
+                </svg>
+              </a>
+            </div>
+            <button class="close-btn" @click="editingSongId = null">&times;</button>
+          </div>
+
+          <div class="modal-tabs">
+            <button class="modal-tab" :class="{ active: editMode === 'raw' }" @click="editMode = 'raw'">
+              {{ t("editModeRaw") }}
+            </button>
+            <button class="modal-tab" :class="{ active: editMode === 'visual' }" @click="editMode = 'visual'">
+              {{ t("editModeVisual") }}
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <!-- RAW JSON MODE -->
+            <div v-if="editMode === 'raw'" class="edit-mode-content">
+              <p class="small">{{ t("editSongJson") }}</p>
+              <textarea v-model="editJsonText" class="json-editor" rows="20"></textarea>
+            </div>
+
+            <!-- VISUAL EDITOR MODE -->
+            <div v-else class="edit-mode-content visual-editor">
+              <div class="visual-editor-section">
+                <label>{{ t("title") }}</label>
+                <input v-model="visualEditData.title" type="text" class="editor-input" />
+              </div>
+
+              <div class="visual-editor-section">
+                <label>{{ t("artist") }}</label>
+                <input v-model="visualEditData.artist" type="text" class="editor-input" />
+              </div>
+
+              <div class="visual-editor-section">
+                <label>{{ t("album") }}</label>
+                <input v-model="visualEditData.album" type="text" class="editor-input" />
+              </div>
+
+              <div class="visual-editor-section">
+                <label>{{ t("pasteFullLyrics") }}</label>
+                <textarea v-model="visualEditData.lyricsText" class="lyrics-editor" rows="10" 
+                  @mouseup="handleLyricsSelection"></textarea>
+                <p class="small" style="margin-top: 6px; color: #666;">
+                  {{ t("selectWordsForTranslation") }}
+                </p>
+              </div>
+
+              <div v-if="selectedText" class="translation-panel">
+                <div class="translation-header">
+                  <strong>{{ t("addTranslation") }}</strong>
+                </div>
+
+                <div class="translation-section">
+                  <label>{{ t("vocabularyWord") }}</label>
+                  <input v-model="translationData.word" type="text" class="editor-input" :placeholder="selectedText" />
+                </div>
+
+                <div class="translation-section">
+                  <label>{{ t("vocabularyTranslation") }}</label>
+                  <input v-model="translationData.translation" type="text" class="editor-input" :placeholder="t('optional')" />
+                </div>
+
+                <div class="translation-section">
+                  <label>{{ t("vocabularyExplanation") }}</label>
+                  <textarea v-model="translationData.explanation" class="explanation-editor" rows="3" 
+                    :placeholder="t('optional')"></textarea>
+                </div>
+
+                <div class="translation-actions">
+                  <button class="btn primary" @click="addVocabularyItem()">{{ t("addVocab") }}</button>
+                  <button class="btn" @click="selectedText = ''">{{ t("cancel") }}</button>
+                </div>
+              </div>
+
+              <div v-if="visualEditData.vocabulary && visualEditData.vocabulary.length > 0" class="vocabulary-list">
+                <h4>{{ t("vocabularyItems") }} ({{ visualEditData.vocabulary.length }})</h4>
+                <div v-for="(item, idx) in visualEditData.vocabulary" :key="idx" class="vocab-item">
+                  <div class="vocab-word">{{ item.word }}</div>
+                  <div class="vocab-meaning">
+                    <span v-if="item.translation">{{ item.translation }}</span>
+                    <span v-else-if="item.explanation">{{ item.explanation }}</span>
+                  </div>
+                  <button class="vocab-remove" @click="removeVocabularyItem(idx)">✕</button>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="feedback.message && editingSongId" class="feedback" style="margin-top: 12px;">
+              <div :class="['pill', feedback.ok ? 'ok' : 'bad']">{{ feedback.message }}</div>
+              <div class="small" v-if="feedback.details">{{ feedback.details }}</div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn" @click="editingSongId = null">{{ t("cancel") }}</button>
+            <button class="btn primary" @click="saveEditedSong()">{{ t("saveChanges") }}</button>
+          </div>
+        </div>
+      </div>
 
       <!-- TAB: Train -->
       <section v-else-if="appTab === 'train'" class="card">
@@ -249,7 +381,7 @@
             </div>
 
             <!-- MODE: type -->
-            <div v-else>
+            <div v-else-if="settings.mode === 'type'">
               <h3>{{ t("modeType") }}</h3>
 
               <div v-if="settings.typeTarget === 'currentLine' && settings.showHintLine === 'on'" class="small">
@@ -262,6 +394,30 @@
                 <button class="btn primary" :disabled="roundLocked" @click="submitTypedLine()">
                   {{ t("check") }}
                 </button>
+              </div>
+            </div>
+
+            <!-- MODE: vocabulary -->
+            <div v-else-if="settings.mode === 'vocabulary'">
+              <h3>{{ t("modeVocabulary") }}</h3>
+              
+              <div v-if="!currentWord" class="empty">
+                {{ t("noVocabulary") }}
+              </div>
+              
+              <div v-else>
+                <div class="vocabulary-word">
+                  <div class="label">{{ t("vocabularyWord") }}</div>
+                  <div class="word-display">{{ currentWord.word }}</div>
+                </div>
+
+                <div class="vocabulary-choices">
+                  <div class="small">{{ t("vocabularyHint") }}</div>
+                  <button v-for="(option, idx) in vocabChoices" :key="idx" class="choice"
+                    :disabled="roundLocked" @click="submitVocabularyChoice(option)">
+                    <div class="vocab-option-text">{{ option }}</div>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -336,6 +492,7 @@
                   <option value="nextLine">{{ t("modeNextLine") }}</option>
                   <option value="cloze">{{ t("modeCloze") }}</option>
                   <option value="type">{{ t("modeType") }}</option>
+                  <option value="vocabulary">{{ t("modeVocabulary") }}</option>
                 </select>
               </div>
 
@@ -435,7 +592,7 @@
       </section>
 
       <!-- TAB: About -->
-      <section v-else class="about">
+      <section v-else-if="appTab === 'about'" class="about">
         <div class="card-body">
           <h2 class="about-title">{{ t("aboutTitle") }}</h2>
           <p class="about-p">{{ t("aboutP1") }}</p>
@@ -458,6 +615,12 @@ import { computed, onMounted, reactive, ref, watch, Ref } from "vue";
  * Types / Storage
  * -----------------------------
  */
+type Word = {
+  word: string;
+  translation?: string;
+  explanation?: string;
+};
+
 type Song = {
   id: string;
   title: string;
@@ -465,9 +628,17 @@ type Song = {
   album?: string;
   createdAt: string;
   lines: string[];
+  vocabulary?: Word[];
 };
 
-type Mode = "nextLine" | "cloze" | "type";
+type SongSet = {
+  id: string;
+  name: string;
+  createdAt: string;
+  songs: Song[];
+};
+
+type Mode = "nextLine" | "cloze" | "type" | "vocabulary";
 type Order = "sequence" | "random";
 type Normalize = "strict" | "basic" | "punct";
 type ClozeInput = "choice" | "type";
@@ -575,6 +746,19 @@ const messages: Record<Lang, Messages> = {
     album: "Album",
     optional: "optional",
 
+    edit: "Edit",
+    editSong: "Edit song",
+    editSongJson: "Edit song data (JSON)",
+    saveChanges: "Save changes",
+    cancel: "Cancel",
+    jsonFormatHelp: "JSON format help (opens in new tab)",
+    editModeRaw: "Raw JSON",
+    editModeVisual: "Visual Editor",
+    selectWordsForTranslation: "Select words in the lyrics to add translations",
+    addTranslation: "Add Translation",
+    addVocab: "Add to vocabulary",
+    vocabularyItems: "Vocabulary items",
+
     pasteFullLyrics: "Paste the full lyrics",
     pastePlaceholder: "Paste the lyrics here...",
     addToLibrary: "Add to library",
@@ -596,6 +780,7 @@ const messages: Record<Lang, Messages> = {
     modeNextLine: "Next line",
     modeCloze: "Fill blanks (cloze)",
     modeType: "Type (whole line)",
+    modeVocabulary: "Word meanings",
 
     tabAbout: "About",
     aboutTitle: "About Lyrics Trainer",
@@ -679,16 +864,34 @@ const messages: Record<Lang, Messages> = {
 
     sessionReset: "Session reset.",
     songAdded: "Song added.",
+    songUpdated: "Song updated.",
     jsonExportStarted: "JSON export started (download).",
     jsonPasteFirst: "Paste JSON first.",
     jsonParseError: "JSON parse error.",
     noValidSongs: "No valid songs found in JSON.",
     importedSongs: "Imported: {n} songs.",
+    importedSongSets: "Imported: {n} song sets.",
+    noSetSelected: "No song set selected.",
     provideTitle: "Please provide a title.",
     pasteLyricsFirst: "Paste lyrics first.",
     tooFewLines: "Too few lines. Make sure the text has multiple lines.",
     continue: "Continue",
     tryAgain: "Try again",
+    
+    vocabularyHint: "Choose the correct meaning.",
+    vocabularyWord: "Word",
+    vocabularyTranslation: "Translation",
+    vocabularyExplanation: "Explanation",
+    noVocabulary: "No vocabulary data for this song. Add words and translations/explanations via JSON.",
+    manageVocabulary: "Manage vocabulary",
+    
+    songSets: "Song Sets",
+    newSet: "New Set",
+    setName: "Set name",
+    setNamePlaceholder: "e.g. Spanish Classics",
+    deleteSet: "Delete set",
+    selectSet: "Select a song set",
+    
     footer:
       "Local in your browser (localStorage). No network. JSON import/export available.",
   },
@@ -724,6 +927,19 @@ const messages: Record<Lang, Messages> = {
     album: "Álbum",
     optional: "opcional",
 
+    edit: "Editar",
+    editSong: "Editar canción",
+    editSongJson: "Editar datos de canción (JSON)",
+    saveChanges: "Guardar cambios",
+    cancel: "Cancelar",
+    jsonFormatHelp: "Ayuda de formato JSON (abre en una pestaña nueva)",
+    editModeRaw: "JSON sin procesar",
+    editModeVisual: "Editor visual",
+    selectWordsForTranslation: "Selecciona palabras en la letra para agregar traducciones",
+    addTranslation: "Agregar traducción",
+    addVocab: "Agregar al vocabulario",
+    vocabularyItems: "Elementos de vocabulario",
+
     pasteFullLyrics: "Pega la letra completa",
     pastePlaceholder: "Pega la letra aquí...",
     addToLibrary: "Añadir a la biblioteca",
@@ -746,6 +962,7 @@ const messages: Record<Lang, Messages> = {
     modeNextLine: "Siguiente línea",
     modeCloze: "Completar huecos (cloze)",
     modeType: "Escribir (línea completa)",
+    modeVocabulary: "Significados de palabras",
 
     tabAbout: "Acerca de",
     aboutTitle: "Acerca de Lyrics Trainer",
@@ -830,16 +1047,34 @@ const messages: Record<Lang, Messages> = {
 
     sessionReset: "Sesión reiniciada.",
     songAdded: "Canción añadida.",
+    songUpdated: "Canción actualizada.",
     jsonExportStarted: "Exportación JSON iniciada (descarga).",
     jsonPasteFirst: "Primero pega el JSON.",
     jsonParseError: "Error al parsear JSON.",
     noValidSongs: "No se encontraron canciones válidas en el JSON.",
     importedSongs: "Importadas: {n} canciones.",
+    importedSongSets: "Importados: {n} conjuntos de canciones.",
+    noSetSelected: "No hay conjunto de canciones seleccionado.",
     provideTitle: "Indica un título.",
     pasteLyricsFirst: "Primero pega la letra.",
     tooFewLines: "Muy pocas líneas. Asegúrate de tener varias líneas.",
     continue: "Continuar",
     tryAgain: "Intentar de nuevo",
+    
+    vocabularyHint: "Elige el significado correcto.",
+    vocabularyWord: "Palabra",
+    vocabularyTranslation: "Traducción",
+    vocabularyExplanation: "Explicación",
+    noVocabulary: "Sin datos de vocabulario para esta canción. Añade palabras y traducciones/explicaciones mediante JSON.",
+    manageVocabulary: "Gestionar vocabulario",
+    
+    songSets: "Conjuntos de canciones",
+    newSet: "Nuevo conjunto",
+    setName: "Nombre del conjunto",
+    setNamePlaceholder: "p.ej. Clásicos españoles",
+    deleteSet: "Eliminar conjunto",
+    selectSet: "Selecciona un conjunto de canciones",
+    
     footer:
       "Local en tu navegador (localStorage). Sin red. Importación/exportación JSON disponible.",
   },
@@ -891,8 +1126,51 @@ function seedSongs(): Song[] {
  */
 const sourceTab = ref<"library" | "paste" | "json">("library");
 
-const songs = ref<Song[]>([]);
+const songSets = ref<SongSet[]>([]);
+const currentSetId = ref<string | null>(null);
+const songs = computed(() => {
+  const set = songSets.value.find((s) => s.id === currentSetId.value);
+  return set?.songs ?? [];
+});
 const currentSongId = ref<string | null>(null);
+
+// Helper to get the current set for mutations
+function getCurrentSet(): SongSet | null {
+  return songSets.value.find((s) => s.id === currentSetId.value) ?? null;
+}
+
+// Song Set management
+function createNewSet() {
+  const name = prompt(t("setName"));
+  if (!name || !name.trim()) return;
+  
+  const newSet: SongSet = {
+    id: cryptoRandomId(),
+    name: name.trim(),
+    createdAt: new Date().toISOString(),
+    songs: [],
+  };
+  
+  songSets.value.push(newSet);
+  currentSetId.value = newSet.id;
+  currentSongId.value = null;
+  
+  setFeedback(true, `Set "${newSet.name}" created.`);
+}
+
+function deleteCurrentSet() {
+  const set = getCurrentSet();
+  if (!set) return;
+  
+  if (!confirm(`Delete set "${set.name}"? This cannot be undone.`)) return;
+  
+  songSets.value = songSets.value.filter((s) => s.id !== set.id);
+  currentSetId.value = songSets.value.length ? songSets.value[0].id : null;
+  currentSongId.value = null;
+  
+  setFeedback(true, `Set deleted.`);
+  resetRound(true);
+}
 
 const songSearch = ref("");
 const songSort = reactive<{
@@ -905,6 +1183,33 @@ const songSort = reactive<{
 
 const pasteForm = reactive({ title: "", artist: "", album: "", text: "" });
 const jsonImportText = ref("");
+
+// Song editor state
+const editingSongId = ref<string | null>(null);
+const editJsonText = ref("");
+const editMode = ref<"raw" | "visual">("visual");
+
+// Visual editor state
+const visualEditData = reactive<{
+  title: string;
+  artist: string;
+  album: string;
+  lyricsText: string;
+  vocabulary: Word[];
+}>({
+  title: "",
+  artist: "",
+  album: "",
+  lyricsText: "",
+  vocabulary: [],
+});
+
+const selectedText = ref<string | null>(null);
+const translationData = reactive({
+  word: "",
+  translation: "",
+  explanation: "",
+});
 
 const stats = reactive({ correct: 0, total: 0 });
 
@@ -938,6 +1243,16 @@ const clozeChoices = ref<string[]>([]);
 const clozeMissingCount = ref(1);
 
 const typedInput = ref("");
+
+// Vocabulary training state
+const vocabIndex = ref(0);
+const vocabChoices = ref<string[]>([]);
+const currentWord = computed(() => {
+  if (!currentSong.value?.vocabulary || vocabIndex.value >= currentSong.value.vocabulary.length) {
+    return null;
+  }
+  return currentSong.value.vocabulary[vocabIndex.value];
+});
 
 const currentSong = computed(
   () => songs.value.find((s) => s.id === currentSongId.value) ?? null
@@ -1003,12 +1318,31 @@ const sortedFilteredSongs = computed(() => {
 onMounted(() => {
   loadSongs();
   loadSettings();
-  if (!songs.value.length) {
-    songs.value = seedSongs();
+  
+  // Initialize default set if none exist
+  if (!songSets.value.length) {
+    const defaultSet: SongSet = {
+      id: cryptoRandomId(),
+      name: "Default",
+      createdAt: new Date().toISOString(),
+      songs: seedSongs(),
+    };
+    songSets.value = [defaultSet];
+    currentSetId.value = defaultSet.id;
     persistSongs();
   }
-  if (!currentSongId.value && songs.value.length)
-    currentSongId.value = songs.value[0].id;
+  
+  // Ensure current set is selected
+  if (!currentSetId.value && songSets.value.length) {
+    currentSetId.value = songSets.value[0].id;
+  }
+  
+  // Ensure current song is selected from current set
+  const currentSet = getCurrentSet();
+  if (!currentSongId.value && currentSet?.songs.length) {
+    currentSongId.value = currentSet.songs[0].id;
+  }
+  
   resetRound(true);
 });
 
@@ -1033,12 +1367,28 @@ function loadSongs() {
   const raw = localStorage.getItem(LS_SONGS);
   if (!raw) return;
   try {
-    const parsed = JSON.parse(raw) as {
-      songs: Song[];
-      currentSongId?: string | null;
-    };
-    if (Array.isArray(parsed.songs)) songs.value = parsed.songs;
-    if (parsed.currentSongId) currentSongId.value = parsed.currentSongId;
+    const parsed = JSON.parse(raw) as any;
+    
+    // New format: with sets
+    if (Array.isArray(parsed.songSets) && parsed.currentSetId) {
+      songSets.value = parsed.songSets;
+      currentSetId.value = parsed.currentSetId;
+      currentSongId.value = parsed.currentSongId || null;
+      return;
+    }
+    
+    // Legacy format: flat songs array. Convert to a default set for backward compatibility
+    if (Array.isArray(parsed.songs)) {
+      const defaultSet: SongSet = {
+        id: cryptoRandomId(),
+        name: "Default",
+        createdAt: new Date().toISOString(),
+        songs: parsed.songs,
+      };
+      songSets.value = [defaultSet];
+      currentSetId.value = defaultSet.id;
+      currentSongId.value = parsed.currentSongId || null;
+    }
   } catch {
     // ignore
   }
@@ -1046,7 +1396,11 @@ function loadSongs() {
 function persistSongs() {
   localStorage.setItem(
     LS_SONGS,
-    JSON.stringify({ songs: songs.value, currentSongId: currentSongId.value })
+    JSON.stringify({
+      songSets: songSets.value,
+      currentSetId: currentSetId.value,
+      currentSongId: currentSongId.value,
+    })
   );
 }
 function loadSettings() {
@@ -1069,11 +1423,135 @@ function persistSettings() {
  * -----------------------------
  */
 function deleteSongById(id: string) {
-  songs.value = songs.value.filter((x) => x.id !== id);
+  const set = getCurrentSet();
+  if (!set) return;
+  
+  set.songs = set.songs.filter((x) => x.id !== id);
+  
   if (currentSongId.value === id) {
-    currentSongId.value = songs.value.length ? songs.value[0].id : null;
+    currentSongId.value = set.songs.length ? set.songs[0].id : null;
   }
   resetRound(true);
+}
+
+function startEditSong(id: string) {
+  const song = songs.value.find((s) => s.id === id);
+  if (!song) return;
+  editingSongId.value = id;
+  editJsonText.value = JSON.stringify(song, null, 2);
+  editMode.value = "visual";
+  
+  // Initialize visual editor data
+  visualEditData.title = song.title || "";
+  visualEditData.artist = song.artist || "";
+  visualEditData.album = song.album || "";
+  visualEditData.lyricsText = song.lines.join("\n");
+  visualEditData.vocabulary = song.vocabulary ? [...song.vocabulary] : [];
+  
+  selectedText.value = "";
+  translationData.word = "";
+  translationData.translation = "";
+  translationData.explanation = "";
+  
+  feedback.message = "";
+  feedback.details = "";
+}
+
+function saveEditedSong() {
+  if (!editingSongId.value) return;
+
+  try {
+    let updated: any;
+    
+    if (editMode.value === "raw") {
+      // Parse JSON from raw mode
+      updated = JSON.parse(editJsonText.value);
+    } else {
+      // Build song object from visual mode
+      updated = {
+        id: editingSongId.value,
+        title: visualEditData.title.trim(),
+        artist: visualEditData.artist.trim() || undefined,
+        album: visualEditData.album.trim() || undefined,
+        lines: visualEditData.lyricsText
+          .split("\n")
+          .map((l) => l.trim())
+          .filter((l) => l.length > 0),
+        vocabulary: visualEditData.vocabulary.length > 0 ? visualEditData.vocabulary : undefined,
+        createdAt: songs.value.find((s) => s.id === editingSongId.value)?.createdAt || new Date().toISOString(),
+      };
+    }
+    
+    // Validate the updated song
+    const validated = sanitizeSong(updated);
+    if (!validated) {
+      return setFeedback(false, t("jsonParseError"), "Invalid song structure");
+    }
+
+    // Preserve the ID
+    validated.id = editingSongId.value;
+
+    // Find and replace the song
+    const idx = songs.value.findIndex((s) => s.id === editingSongId.value);
+    if (idx !== -1) {
+      songs.value[idx] = validated;
+      setFeedback(true, t("songUpdated"));
+      setTimeout(() => {
+        editingSongId.value = null;
+        feedback.message = "";
+      }, 1000);
+    }
+  } catch (e: any) {
+    setFeedback(false, t("jsonParseError"), String(e?.message ?? e));
+  }
+}
+
+function handleLyricsSelection() {
+  const textarea = document.querySelector(".lyrics-editor") as HTMLTextAreaElement;
+  if (!textarea) return;
+  
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  
+  if (start !== end) {
+    // Text is selected
+    selectedText.value = textarea.value.substring(start, end).trim();
+    translationData.word = selectedText.value;
+  } else {
+    // No text selected
+    selectedText.value = null;
+  }
+}
+
+function addVocabularyItem() {
+  const word = translationData.word.trim();
+  const translation = translationData.translation.trim();
+  
+  if (!word || !translation) {
+    return setFeedback(false, t("provideTitle"), "Word and translation are required");
+  }
+  
+  const vocabItem: Word = {
+    word,
+    translation,
+    explanation: translationData.explanation.trim() || undefined,
+  };
+  
+  visualEditData.vocabulary.push(vocabItem);
+  
+  // Clear the form
+  translationData.word = "";
+  translationData.translation = "";
+  translationData.explanation = "";
+  selectedText.value = null;
+  
+  setFeedback(true, t("addVocab"));
+}
+
+function removeVocabularyItem(idx: number) {
+  if (idx >= 0 && idx < visualEditData.vocabulary.length) {
+    visualEditData.vocabulary.splice(idx, 1);
+  }
 }
 
 function clearPasteForm() {
@@ -1093,6 +1571,9 @@ function addSongFromPaste() {
   const lines = normalizeLines(splitIntoLines(text));
   if (lines.length < 2) return setFeedback(false, t("tooFewLines"));
 
+  const set = getCurrentSet();
+  if (!set) return setFeedback(false, t("noSetSelected"));
+
   const s: Song = {
     id: cryptoRandomId(),
     title,
@@ -1102,7 +1583,7 @@ function addSongFromPaste() {
     lines,
   };
 
-  songs.value.unshift(s);
+  set.songs.unshift(s);
   currentSongId.value = s.id;
   sourceTab.value = "library";
 
@@ -1121,27 +1602,76 @@ function importSongsJson() {
   if (!raw) return setFeedback(false, t("jsonPasteFirst"));
   try {
     const parsed = JSON.parse(raw);
-    const incoming: Song[] = Array.isArray(parsed)
+    
+    // Check if it's a complete sets export (new format)
+    if (Array.isArray(parsed.songSets)) {
+      // Import complete sets collection
+      const incomingSets = parsed.songSets as any[];
+      
+      // Merge with existing sets (by ID to avoid duplicates)
+      const setById = new Map<string, SongSet>();
+      for (const set of songSets.value) setById.set(set.id, set);
+      
+      let importedCount = 0;
+      for (const incomingSet of incomingSets) {
+        const validated = validateSongSet(incomingSet);
+        if (validated) {
+          setById.set(validated.id, validated);
+          importedCount++;
+        }
+      }
+      
+      songSets.value = Array.from(setById.values());
+      if (!currentSetId.value && songSets.value.length) {
+        currentSetId.value = songSets.value[0].id;
+      }
+      
+      setFeedback(true, t("importedSongSets", { n: importedCount }));
+      jsonImportText.value = "";
+      sourceTab.value = "library";
+      resetRound(true);
+      return;
+    }
+    
+    // Legacy/single format: array of songs or { songs: [] }
+    const incomingSongs: Song[] = Array.isArray(parsed)
       ? parsed
       : Array.isArray(parsed?.songs)
         ? parsed.songs
         : [];
 
-    const cleaned = incoming
+    const cleaned = incomingSongs
       .map((x) => sanitizeSong(x))
       .filter((x): x is Song => !!x && x.lines.length >= 2 && !!x.title);
 
     if (!cleaned.length) return setFeedback(false, t("noValidSongs"));
 
-    const byId = new Map<string, Song>();
-    for (const s of songs.value) byId.set(s.id, s);
-    for (const s of cleaned) byId.set(s.id, s);
+    // If no set data, import into a new set (backward compatibility)
+    if (!currentSetId.value || !getCurrentSet()) {
+      const newSet: SongSet = {
+        id: cryptoRandomId(),
+        name: `Imported ${new Date().toLocaleDateString()}`,
+        createdAt: new Date().toISOString(),
+        songs: cleaned,
+      };
+      songSets.value.push(newSet);
+      currentSetId.value = newSet.id;
+    } else {
+      // Merge into current set
+      const set = getCurrentSet();
+      if (set) {
+        const byId = new Map<string, Song>();
+        for (const s of set.songs) byId.set(s.id, s);
+        for (const s of cleaned) byId.set(s.id, s);
+        set.songs = Array.from(byId.values());
+      }
+    }
 
-    songs.value = Array.from(byId.values());
     if (!currentSongId.value && songs.value.length)
       currentSongId.value = songs.value[0].id;
 
     setFeedback(true, t("importedSongs", { n: cleaned.length }));
+    jsonImportText.value = "";
     sourceTab.value = "library";
     resetRound(true);
   } catch (e: any) {
@@ -1150,10 +1680,13 @@ function importSongsJson() {
 }
 
 function exportSongsJson() {
-  const payload = JSON.stringify(songs.value, null, 2);
+  // Export all sets
+  const payload = JSON.stringify({
+    songSets: songSets.value,
+  }, null, 2);
   // BOM helps some programs detect UTF-8 correctly
   const withBom = "\uFEFF" + payload;
-  downloadText(withBom, "songs.json", "application/json;charset=utf-8");
+  downloadText(withBom, "song-sets.json", "application/json;charset=utf-8");
   // todo: this feedback is on another component, so do something once we make an export tab
   // setFeedback(true, t("jsonExportStarted"));
 }
@@ -1236,6 +1769,14 @@ function newPrompt() {
 
 function buildPromptAndAnswer() {
   if (!currentSong.value) return;
+  
+  // For vocabulary mode, don't show prompt/answer lines
+  if (settings.mode === "vocabulary") {
+    promptLine.value = "";
+    answerLine.value = "";
+    return;
+  }
+
   const lines = currentSong.value.lines;
 
   const safeIdx = clamp(currentIndex.value, 0, lines.length - 2);
@@ -1277,6 +1818,16 @@ function buildExerciseArtifacts() {
     else clozeChoices.value = [];
 
     mcqChoices.value = [];
+    return;
+  }
+
+  if (settings.mode === "vocabulary") {
+    vocabIndex.value = 0;
+    buildVocabularyOptions();
+    mcqChoices.value = [];
+    clozeTokens.value = [];
+    clozeChoices.value = [];
+    activeBlankIndex.value = 0;
     return;
   }
 
@@ -1432,6 +1983,65 @@ function finalizeClozeRound(ok: boolean, details?: string) {
         settings.clozeMaxMissing
       );
   }
+}
+
+function submitVocabularyChoice(chosenOption: string) {
+  if (roundLocked.value) return;
+  if (!currentWord.value) return;
+
+  roundLocked.value = true;
+  
+  // The correct answer is either translation or explanation (prefer translation)
+  const correct = currentWord.value.translation || currentWord.value.explanation || "";
+  const ok = chosenOption === correct;
+
+  stats.total += 1;
+  if (ok) {
+    stats.correct += 1;
+    setFeedback(true, t("good"));
+    advanceVocabQuestion();
+  } else {
+    revealAnswer.value = true;
+    setFeedback(false, t("notGood"), `${t("correctLabel")}: "${correct}"`);
+  }
+}
+
+function advanceVocabQuestion() {
+  if (!currentSong.value?.vocabulary) return;
+  setTimeout(() => {
+    const n = currentSong.value!.vocabulary!.length;
+    if (settings.order === "sequence") {
+      vocabIndex.value = (vocabIndex.value + 1) % Math.max(1, n);
+    } else {
+      vocabIndex.value = randomInt(0, n - 1);
+    }
+    resetRoundUiState();
+    buildVocabularyOptions();
+  }, GOOD_MS);
+}
+
+function buildVocabularyOptions() {
+  if (!currentWord.value) return;
+
+  // Build choices from all possible answers (translations + explanations) from vocabulary
+  const correctAnswer = currentWord.value.translation || currentWord.value.explanation || "";
+  
+  if (!currentSong.value?.vocabulary) {
+    vocabChoices.value = [];
+    return;
+  }
+
+  // Get all possible answers from this song's vocabulary
+  const allAnswers = currentSong.value.vocabulary
+    .map((w) => w.translation || w.explanation || "")
+    .filter((a) => a && a !== correctAnswer);
+
+  // Sample unique wrong answers
+  const wrongAnswers = sampleUnique(allAnswers, settings.optionCount - 1, (x) => x);
+
+  // Mix in correct answer and shuffle
+  const choices = [correctAnswer, ...wrongAnswers];
+  vocabChoices.value = shuffle(choices).slice(0, settings.optionCount);
 }
 
 /**
@@ -1739,6 +2349,28 @@ function tryAgainSamePrompt() {
  * Sanitization for JSON import
  * -----------------------------
  */
+function validateSongSet(x: any): SongSet | null {
+  if (!x || typeof x !== "object") return null;
+  const id = String(x.id ?? cryptoRandomId());
+  const name = String(x.name ?? "").trim();
+  const createdAt = x.createdAt ? String(x.createdAt) : new Date().toISOString();
+  
+  const songs = Array.isArray(x.songs)
+    ? x.songs
+        .map((s: any) => sanitizeSong(s))
+        .filter((s): s is Song => !!s && s.lines.length >= 2 && !!s.title)
+    : [];
+  
+  if (!name || !songs.length) return null;
+  
+  return {
+    id,
+    name,
+    createdAt,
+    songs,
+  };
+}
+
 function sanitizeSong(x: any): Song | null {
   if (!x) return null;
   const title = String(x.title ?? "").trim();
@@ -1753,7 +2385,24 @@ function sanitizeSong(x: any): Song | null {
     album: x.album ? String(x.album) : undefined,
     createdAt: x.createdAt ? String(x.createdAt) : new Date().toISOString(),
     lines: normalizeLines(lines),
+    vocabulary: sanitizeVocabulary(x.vocabulary),
   };
+}
+
+function sanitizeVocabulary(vocab: any): Word[] | undefined {
+  if (!Array.isArray(vocab)) return undefined;
+  const sanitized: Word[] = [];
+  for (const v of vocab) {
+    if (!v || typeof v !== "object") continue;
+    const word = String(v.word ?? "").trim();
+    if (!word) continue;
+    sanitized.push({
+      word,
+      translation: v.translation ? String(v.translation).trim() : undefined,
+      explanation: v.explanation ? String(v.explanation).trim() : undefined,
+    });
+  }
+  return sanitized.length > 0 ? sanitized : undefined;
 }
 
 /**
@@ -1823,6 +2472,18 @@ const jsonSchemaExample = `[
       "First line",
       "Second line",
       "..."
+    ],
+    "vocabulary": [
+      {
+        "word": "palabra",
+        "translation": "word",
+        "explanation": "A unit of language"
+      },
+      {
+        "word": "canción",
+        "translation": "song",
+        "explanation": "A piece of music with lyrics"
+      }
     ]
   }
 ]`;
@@ -2501,5 +3162,416 @@ textarea {
   margin-top: 14px;
   text-align: center;
   color: #555;
+}
+
+.vocabulary-word {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f9f9f9;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+}
+
+.word-display {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+  margin-top: 8px;
+  word-break: break-word;
+}
+
+.vocabulary-choices {
+  margin-top: 16px;
+}
+
+.vocab-option-text {
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #e2e2e2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #111;
+}
+
+.help-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e8f0ff;
+  color: #0066cc;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.help-link:hover {
+  background: #0066cc;
+  color: white;
+}
+
+.help-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #111;
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.modal-body {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.json-editor {
+  width: 100%;
+  font-family: "Monaco", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fafafa;
+  color: #333;
+  resize: vertical;
+}
+
+.json-editor:focus {
+  outline: none;
+  border-color: #0a3cff;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(10, 60, 255, 0.1);
+}
+
+.modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e2e2e2;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  background: #fafafa;
+}
+
+.modal-footer .btn {
+  min-width: 100px;
+}
+
+/* Modal tabs styling */
+.modal-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e2e2e2;
+  margin: -20px -20px 0 -20px;
+  padding: 0;
+  background: #fafafa;
+}
+
+.modal-tabs button {
+  flex: 1;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.modal-tabs button:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.modal-tabs button.active {
+  color: #0a3cff;
+  border-bottom-color: #0a3cff;
+  background: #fff;
+}
+
+/* Visual editor styling */
+.visual-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.visual-editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.visual-editor-section label {
+  font-weight: 500;
+  font-size: 13px;
+  color: #333;
+}
+
+.visual-editor-section input,
+.visual-editor-section textarea {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  font-size: 14px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.visual-editor-section input:focus,
+.visual-editor-section textarea:focus {
+  outline: none;
+  border-color: #0a3cff;
+  box-shadow: 0 0 0 3px rgba(10, 60, 255, 0.1);
+}
+
+.lyrics-editor {
+  min-height: 150px;
+  font-family: "Monaco", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+/* Translation panel styling */
+.translation-panel {
+  background: #f8f9fa;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+.translation-panel h4 {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.translation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.translation-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.translation-form-row label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+}
+
+.translation-form-row input,
+.translation-form-row textarea {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background: #fff;
+  color: #333;
+}
+
+.translation-form-row textarea {
+  min-height: 60px;
+  font-family: "Monaco", "Courier New", monospace;
+  font-size: 12px;
+  resize: vertical;
+}
+
+.translation-form-row input:focus,
+.translation-form-row textarea:focus {
+  outline: none;
+  border-color: #0a3cff;
+  box-shadow: 0 0 0 2px rgba(10, 60, 255, 0.1);
+}
+
+.translation-form-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.translation-form-buttons button {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.translation-form-buttons button:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
+}
+
+.translation-form-buttons .primary-btn {
+  background: #0a3cff;
+  color: #fff;
+  border-color: #0a3cff;
+}
+
+.translation-form-buttons .primary-btn:hover {
+  background: #0633d9;
+  border-color: #0633d9;
+}
+
+/* Vocabulary list styling */
+.vocabulary-list {
+  background: #f8f9fa;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.vocabulary-list h4 {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.vocabulary-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.vocabulary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #e2e2e2;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.vocabulary-item-content {
+  flex: 1;
+}
+
+.vocabulary-item-word {
+  font-weight: 600;
+  color: #0a3cff;
+}
+
+.vocabulary-item-translation {
+  color: #666;
+  font-size: 12px;
+}
+
+.vocabulary-item-explanation {
+  color: #999;
+  font-size: 11px;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.vocabulary-item-remove {
+  padding: 4px 8px;
+  background: #ffebee;
+  color: #c62828;
+  border: none;
+  border-radius: 3px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vocabulary-item-remove:hover {
+  background: #ef5350;
+  color: #fff;
+}
+
+.empty-vocabulary {
+  color: #999;
+  font-size: 12px;
+  text-align: center;
+  padding: 20px 0;
 }
 </style>

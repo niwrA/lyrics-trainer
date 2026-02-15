@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Format Help - Lyrics Trainer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --color-primary: #0066cc;
+      --color-danger: #cc3333;
+      --color-text: #111;
+      --color-text-light: #666;
+      --color-bg: #fafafa;
+      --color-border: #e2e2e2;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: white;
+      color: var(--color-text);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: white;
+      border-bottom: 1px solid var(--color-border);
+      padding: 16px 24px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 20px;
+      color: var(--color-text);
+    }
+
+    .topbar p {
+      margin: 4px 0 0 0;
+      color: var(--color-text-light);
+      font-size: 13px;
+    }
+
+    main {
+      flex: 1;
+      padding: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      margin: 24px 0 12px 0;
+      font-size: 18px;
+      color: var(--color-text);
+      border-bottom: 2px solid var(--color-primary);
+      padding-bottom: 8px;
+    }
+
+    h2:first-child {
+      margin-top: 0;
+    }
+
+    h3 {
+      margin: 16px 0 8px 0;
+      font-size: 16px;
+      color: var(--color-text);
+    }
+
+    p {
+      margin: 0 0 12px 0;
+      color: var(--color-text);
+    }
+
+    ul,
+    ol {
+      margin: 12px 0;
+      padding-left: 24px;
+    }
+
+    li {
+      margin: 6px 0;
+      color: var(--color-text);
+    }
+
+    code {
+      background: var(--color-bg);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: "Monaco", "Courier New", monospace;
+      font-size: 13px;
+      color: #d73a49;
+    }
+
+    pre {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      padding: 12px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: "Monaco", "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .example {
+      background: #f5f9ff;
+      border-left: 3px solid var(--color-primary);
+      padding: 12px;
+      margin: 12px 0;
+      border-radius: 2px;
+    }
+
+    .warning {
+      background: #fff9f0;
+      border-left: 3px solid #ff9900;
+      padding: 12px;
+      margin: 12px 0;
+      border-radius: 2px;
+    }
+
+    .note {
+      background: #f0f7ff;
+      border-left: 3px solid var(--color-primary);
+      padding: 12px;
+      margin: 12px 0;
+      border-radius: 2px;
+      color: var(--color-text-light);
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+    }
+
+    table th,
+    table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    table th {
+      background: var(--color-bg);
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    table tr:last-child td {
+      border-bottom: none;
+    }
+
+    a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .footer {
+      border-top: 1px solid var(--color-border);
+      padding: 16px 24px;
+      font-size: 12px;
+      color: var(--color-text-light);
+      text-align: center;
+      background: var(--color-bg);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+
+    .back-link::before {
+      content: "← ";
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>JSON Format Help</h1>
+    <p>Complete guide to editing songs with JSON</p>
+  </div>
+
+  <main>
+    <a href="javascript:window.close();" class="back-link">Close this window</a>
+
+    <div class="card">
+      <h2>Song JSON Format</h2>
+
+      <p>
+        When editing a song in Lyrics Trainer, you're working with a JSON object. Here's everything you need to know.
+      </p>
+
+      <h3>Basic Structure</h3>
+
+      <p>Every song has this structure:</p>
+
+      <pre>{
+  "id": "unique-id-string",
+  "title": "Song Title",
+  "artist": "Artist Name",
+  "album": "Album Name",
+  "createdAt": "2026-02-15T10:30:00.000Z",
+  "lines": [
+    "First line of lyrics",
+    "Second line of lyrics",
+    "Third line of lyrics"
+  ]
+}</pre>
+
+      <h3>Required Fields</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>id</code></td>
+            <td>string</td>
+            <td>Unique identifier (auto-generated, usually a UUID). Don't change this unless you know what you're doing.</td>
+          </tr>
+          <tr>
+            <td><code>title</code></td>
+            <td>string</td>
+            <td>Song title. Must be provided and cannot be empty.</td>
+          </tr>
+          <tr>
+            <td><code>lines</code></td>
+            <td>array of strings</td>
+            <td>Array of song lyrics, one line per element. Must have at least 2 lines.</td>
+          </tr>
+          <tr>
+            <td><code>createdAt</code></td>
+            <td>ISO date string</td>
+            <td>When the song was added. Format: "2026-02-15T10:30:00.000Z"</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Optional Fields</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>artist</code></td>
+            <td>string</td>
+            <td>Artist or performer name. Can be omitted.</td>
+          </tr>
+          <tr>
+            <td><code>album</code></td>
+            <td>string</td>
+            <td>Album name. Can be omitted.</td>
+          </tr>
+          <tr>
+            <td><code>vocabulary</code></td>
+            <td>array of objects</td>
+            <td>
+              Array of vocabulary words with translations/explanations for vocabulary training mode.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Vocabulary Field</h2>
+
+      <p>
+        The <code>vocabulary</code> field lets you add word meanings for the vocabulary training mode.
+      </p>
+
+      <h3>Vocabulary Structure</h3>
+
+      <pre>{
+  "id": "song-id",
+  "title": "Song Title",
+  "lines": ["line 1", "line 2"],
+  "vocabulary": [
+    {
+      "word": "palabra",
+      "translation": "word",
+      "explanation": "Any word or phrase"
+    },
+    {
+      "word": "canción",
+      "translation": "song",
+      "explanation": "A musical composition with lyrics"
+    }
+  ]
+}</pre>
+
+      <p>Each vocabulary item has:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Required</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>word</code></td>
+            <td>string</td>
+            <td>Yes</td>
+            <td>The word or phrase to train on.</td>
+          </tr>
+          <tr>
+            <td><code>translation</code></td>
+            <td>string</td>
+            <td>Optional*</td>
+            <td>Direct translation. Used as the correct answer in training.</td>
+          </tr>
+          <tr>
+            <td><code>explanation</code></td>
+            <td>string</td>
+            <td>Optional*</td>
+            <td>Detailed explanation. Used if translation is not provided.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        * At least one of <code>translation</code> or <code>explanation</code> is required for each vocabulary item.
+      </div>
+
+      <h2>Custom Fields</h2>
+
+      <p>
+        You can add any additional fields you want! For example:
+      </p>
+
+      <pre>{
+  "id": "song-id",
+  "title": "La Bamba",
+  "artist": "Ritchie Valens",
+  "lines": ["Para bailar la bamba", "Se necesita..."],
+  "vocabulary": [...],
+  "hints": [
+    { "line": 0, "hint": "BAH-mah" },
+    { "line": 1, "hint": "Say-neh-SEE-tah" }
+  ],
+  "difficulty": "beginner",
+  "language": "Spanish"
+}</pre>
+
+      <p>
+        Custom fields won't affect training but will be preserved when you save, so you can use them for your own notes and organization.
+      </p>
+
+      <h2>Editing Tips</h2>
+
+      <h3>Modifying Lyrics</h3>
+
+      <p>
+        To change a line, edit the string in the <code>lines</code> array:
+      </p>
+
+      <pre>"lines": [
+  "Old line text",
+  "New line text",
+  "Another line"
+]</pre>
+
+      <h3>Adding/Removing Lines</h3>
+
+      <p>
+        Add a new line by adding an element to the array:
+      </p>
+
+      <pre>"lines": [
+  "Line 1",
+  "Line 2",
+  "New line 3"  ← Add comma if there's more
+]</pre>
+
+      <p>Remove a line by deleting it (remember comma rules!).</p>
+
+      <h3>Adding Vocabulary</h3>
+
+      <p>Add the <code>vocabulary</code> field if it doesn't exist:</p>
+
+      <pre>{
+  "id": "...",
+  "title": "...",
+  "lines": [...],
+  "vocabulary": [
+    {
+      "word": "ejemplo",
+      "translation": "example"
+    }
+  ]
+}</pre>
+
+      <h2>Common Mistakes</h2>
+
+      <div class="warning">
+        <strong>Comma Issues:</strong> In JSON arrays and objects, elements are separated by commas, but there should be NO comma after the last element.
+      </div>
+
+      <div class="example">
+        <strong>❌ Wrong:</strong>
+        <pre>"lines": [
+  "Line 1",
+  "Line 2",  ← No comma here!
+]</pre>
+      </div>
+
+      <div class="example">
+        <strong>✅ Correct:</strong>
+        <pre>"lines": [
+  "Line 1",
+  "Line 2"
+]</pre>
+      </div>
+
+      <div class="warning">
+        <strong>Quotes:</strong> All strings must be wrapped in double quotes <code>"</code>, not single quotes.
+      </div>
+
+      <div class="warning">
+        <strong>Special Characters:</strong> If your text contains quotes or backslashes, escape them with a backslash:
+        <ul>
+          <li><code>"He said \"hello\""</code></li>
+          <li><code>"Path: C:\\Users\\Name"</code></li>
+        </ul>
+      </div>
+
+      <h2>Validation Rules</h2>
+
+      <p>When you save, the editor checks:</p>
+
+      <ul>
+        <li><strong>Valid JSON syntax</strong> - The JSON must be properly formatted</li>
+        <li><strong>Title required</strong> - The <code>title</code> field must exist and not be empty</li>
+        <li><strong>Minimum lines</strong> - At least 2 lines required for training</li>
+        <li><strong>ID preserved</strong> - Your song's ID is kept (not replaced)</li>
+        <li><strong>Vocabulary optional</strong> - <code>vocabulary</code> field is completely optional</li>
+      </ul>
+
+      <div class="note">
+        If you get an error message, check the error details - they usually point to the exact problem in your JSON.
+      </div>
+
+      <h2>Example: Complete Song</h2>
+
+      <pre>{
+  "id": "abc123def456",
+  "title": "La Bamba",
+  "artist": "Ritchie Valens",
+  "album": "La Bamba",
+  "createdAt": "2026-02-15T10:30:00.000Z",
+  "lines": [
+    "Para bailar la bamba",
+    "Se necesita una poca de gracia",
+    "Una poca de gracia y otra cosita",
+    "Ay arriba y arriba"
+  ],
+  "vocabulary": [
+    {
+      "word": "bailar",
+      "translation": "to dance"
+    },
+    {
+      "word": "gracia",
+      "translation": "grace, charm"
+    },
+    {
+      "word": "arriba",
+      "translation": "up"
+    }
+  ],
+  "difficulty": "beginner",
+  "notes": "Classic rock song with Spanish lyrics"
+}</pre>
+
+      <h2>Need More Help?</h2>
+
+      <p>
+        <strong>JSON is invalid?</strong> Copy your JSON into a
+        <a href="https://jsonlint.com" target="_blank">JSON validator</a> to find syntax errors.
+      </p>
+
+      <p>
+        <strong>Not sure about formatting?</strong> Look at existing songs in your library as examples.
+      </p>
+
+      <p>
+        <strong>Want to learn JSON?</strong> Check out
+        <a href="https://www.json.org" target="_blank">json.org</a> for official JSON documentation.
+      </p>
+    </div>
+
+    <a href="javascript:window.close();" class="back-link">Close this window</a>
+  </main>
+
+  <footer class="footer">
+    Lyrics Trainer • JSON Format Help
+  </footer>
+</body>
+</html>
