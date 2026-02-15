@@ -62,6 +62,8 @@
                 </option>
               </select>
               <button class="btn" @click="createNewSet()">{{ t("newSet") }}</button>
+              <button class="btn" @click="renameCurrentSet()">{{ t("renameSet") }}</button>
+              <button class="btn" @click="deleteCurrentSet()">{{ t("deleteSet") }}</button>
             </div>
 
             <div class="row">
@@ -308,12 +310,12 @@
               </div>
             </div>
 
-            <div class="prompt">
+            <div v-if="settings.mode !== 'vocabulary'" class="prompt">
               <div class="label">{{ t("prompt") }}</div>
               <div class="line">{{ promptLine }}</div>
             </div>
 
-            <div v-if="revealAnswer" class="answer">
+            <div v-if="settings.mode !== 'vocabulary' && revealAnswer" class="answer">
               <div class="label">{{ t("answer") }}</div>
               <div class="line">{{ answerLine }}</div>
             </div>
@@ -468,7 +470,7 @@
                 <div class="value">{{ t("missingWords", { n: clozeMissingCount }) }}</div>
               </div>
 
-              <div class="stat">
+              <div class="stat" v-if="settings.mode !== 'vocabulary'">
                 <div class="label">{{ t("statsLineIndex") }}</div>
                 <div class="value">
                   {{ t("indexOf", { i: currentIndex + 1, n: currentSong.lines.length }) }}
@@ -907,6 +909,7 @@ const messages: Record<Lang, Messages> = {
     setName: "Set name",
     setNamePlaceholder: "e.g. Spanish Classics",
     deleteSet: "Delete set",
+    renameSet: "Rename set",
     selectSet: "Select a song set",
     
     footer:
@@ -1095,6 +1098,7 @@ const messages: Record<Lang, Messages> = {
     setName: "Nombre del conjunto",
     setNamePlaceholder: "p.ej. Clásicos españoles",
     deleteSet: "Eliminar conjunto",
+    renameSet: "Renombrar conjunto",
     selectSet: "Selecciona un conjunto de canciones",
     
     footer:
@@ -1253,6 +1257,20 @@ function deleteCurrentSet() {
   
   setFeedback(true, `Set deleted.`);
   resetRound(true);
+}
+
+function renameCurrentSet() {
+  const set = getCurrentSet();
+  if (!set) return;
+  
+  const newName = prompt(t("setName"), set.name);
+  if (!newName || !newName.trim()) return;
+  
+  const trimmed = newName.trim();
+  if (trimmed === set.name) return;
+  
+  set.name = trimmed;
+  setFeedback(true, `Set renamed to "${trimmed}".`);
 }
 
 const songSearch = ref("");
@@ -2121,8 +2139,8 @@ function submitVocabularyChoice(chosenOption: string) {
     setFeedback(true, t("good"));
     advanceVocabQuestion();
   } else {
-    revealAnswer.value = true;
     setFeedback(false, t("notGood"), `${t("correctLabel")}: "${correct}"`);
+    roundLocked.value = true;
   }
 }
 
