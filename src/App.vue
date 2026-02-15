@@ -229,6 +229,9 @@
                 <p class="small" style="margin-top: 6px; color: #666;">
                   {{ t("selectWordsForTranslation") }}
                 </p>
+                <button v-if="!selectedText" class="btn" @click="selectedText = 'manually-opened'" style="margin-top: 8px;">
+                  {{ t("addTranslation") }}
+                </button>
               </div>
 
               <div v-if="selectedText" class="translation-panel">
@@ -238,7 +241,7 @@
 
                 <div class="translation-section">
                   <label>{{ t("vocabularyWord") }}</label>
-                  <input v-model="translationData.word" type="text" class="editor-input" :placeholder="selectedText" />
+                  <input v-model="translationData.word" type="text" class="editor-input" :placeholder="selectedText !== 'manually-opened' ? selectedText : t('typeHere')" />
                 </div>
 
                 <div class="translation-section">
@@ -1409,6 +1412,19 @@ onMounted(() => {
     };
     songSets.value = [defaultSet];
     currentSetId.value = defaultSet.id;
+    persistSongs();
+  }
+  
+  // Always ensure "Lyrics Trainer Demo Set" exists (even if local storage exists)
+  const demoSetExists = songSets.value.some((s) => s.name === "Lyrics Trainer Demo Set");
+  if (!demoSetExists) {
+    const demoSet: SongSet = {
+      id: cryptoRandomId(),
+      name: "Lyrics Trainer Demo Set",
+      createdAt: new Date().toISOString(),
+      songs: seedSongs(),
+    };
+    songSets.value.push(demoSet);
     persistSongs();
   }
   
