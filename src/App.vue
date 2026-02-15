@@ -148,6 +148,15 @@
           </div>
 
           <div v-else class="panel">
+            <div class="row">
+              <label>{{ t("importFromFile") }}</label>
+              <input type="file" accept=".json" @change="handleFileImport" />
+            </div>
+
+            <div style="text-align: center; margin: 16px 0; color: #999;">
+              — {{ t("or") }} —
+            </div>
+
             <label>{{ t("pasteJson") }}</label>
             <textarea v-model="jsonImportText" rows="12" :placeholder="t('jsonPlaceholder')"></textarea>
 
@@ -878,6 +887,11 @@ const messages: Record<Lang, Messages> = {
     continue: "Continue",
     tryAgain: "Try again",
     
+    importFromFile: "Import from file",
+    fileLoaded: "File loaded: {name}",
+    fileReadError: "Error reading file.",
+    or: "or",
+    
     vocabularyHint: "Choose the correct meaning.",
     vocabularyWord: "Word",
     vocabularyTranslation: "Translation",
@@ -1060,6 +1074,11 @@ const messages: Record<Lang, Messages> = {
     tooFewLines: "Muy pocas líneas. Asegúrate de tener varias líneas.",
     continue: "Continuar",
     tryAgain: "Intentar de nuevo",
+    
+    importFromFile: "Importar desde archivo",
+    fileLoaded: "Archivo cargado: {name}",
+    fileReadError: "Error al leer el archivo.",
+    or: "o",
     
     vocabularyHint: "Elige el significado correcto.",
     vocabularyWord: "Palabra",
@@ -1370,23 +1389,23 @@ function loadSongs() {
     const parsed = JSON.parse(raw) as any;
     
     // New format: with sets
-    if (Array.isArray(parsed.songSets) && parsed.currentSetId) {
+    if (Array.isArray(parsed.songSets) && parsed.songSets.length > 0) {
       songSets.value = parsed.songSets;
-      currentSetId.value = parsed.currentSetId;
+      currentSetId.value = parsed.currentSetId || (parsed.songSets.length > 0 ? parsed.songSets[0].id : null);
       currentSongId.value = parsed.currentSongId || null;
       return;
     }
     
-    // Legacy format: flat songs array. Convert to a default set for backward compatibility
-    if (Array.isArray(parsed.songs)) {
-      const defaultSet: SongSet = {
+    // Legacy format: flat songs array. Convert to "Existing Songs" set for backward compatibility
+    if (Array.isArray(parsed.songs) && parsed.songs.length > 0) {
+      const existingSet: SongSet = {
         id: cryptoRandomId(),
-        name: "Default",
+        name: "Existing Songs",
         createdAt: new Date().toISOString(),
         songs: parsed.songs,
       };
-      songSets.value = [defaultSet];
-      currentSetId.value = defaultSet.id;
+      songSets.value = [existingSet];
+      currentSetId.value = existingSet.id;
       currentSongId.value = parsed.currentSongId || null;
     }
   } catch {
@@ -1595,6 +1614,30 @@ function addSongFromPaste() {
   setFeedback(true, t("songAdded"));
   resetRound(true);
   appTab.value = "train";
+}
+
+function handleFileImport(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const content = e.target?.result as string;
+      jsonImportText.value = content;
+      setFeedback(true, t("fileLoaded", { name: file.name }));
+    } catch (err) {
+      setFeedback(false, t("fileReadError"));
+    }
+  };
+  reader.onerror = () => {
+    setFeedback(false, t("fileReadError"));
+  };
+  reader.readAsText(file);
+
+  // Reset input so same file can be selected again
+  input.value = "";
 }
 
 function importSongsJson() {
