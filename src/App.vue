@@ -59,7 +59,7 @@
           <div class="brand-title">{{ t("appTitle") }}</div>
           <!-- <div class="brand-sub">{{ t("appSubtitle") }}</div> -->
         </div>
-        <button class="icon-btn" @click="showOnboarding = true" :title="t('helpButton')" :aria-label="t('helpButton')">
+        <button class="brand-btn" @click="showOnboarding = true" :title="t('helpButton')" :aria-label="t('helpButton')">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
             <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" />
             <text x="12" y="15.5" text-anchor="middle" font-size="14" font-weight="bold" fill="currentColor">?</text>
@@ -3465,6 +3465,20 @@ textarea {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
+  border: 1px solid #d6d6d6;
+  background: #f2f2f200;
+  color: #000000;
+  cursor: pointer;
+  padding: 0;
+}
+
+.brand-btn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
   border: 0px solid #d6d6d6;
   background: #f2f2f200;
   color: #ffffff;
@@ -3472,7 +3486,13 @@ textarea {
   padding: 0;
 }
 
+.brand-btn:hover {
+  background: #f2f2f282;
+  border: 1px solid #d6d6d6;
+}
+
 .icon-btn:hover {
+  background: #f2f2f282;
   border: 1px solid #d6d6d6;
 }
 
