@@ -1,11 +1,70 @@
 <template>
   <div class="app">
+    <!-- MODAL: Onboarding / Getting Started -->
+    <div v-if="showOnboarding" class="modal-overlay" @click.self="showOnboarding = false">
+      <div class="modal-card modal-card-large">
+        <div class="modal-header">
+          <div class="modal-header-content">
+            <h2>{{ t("onboardingTitle") }}</h2>
+          </div>
+          <button class="close-btn" @click="showOnboarding = false">&times;</button>
+        </div>
+
+        <div class="modal-body onboarding-content">
+          <div class="onboarding-section">
+            <h3>👋 {{ t("onboardingWelcome") }}</h3>
+            <p>{{ t("onboardingWelcomeDesc") }}</p>
+          </div>
+
+          <div class="onboarding-section">
+            <h3>🎵 {{ t("onboardingStep1") }}</h3>
+            <p>{{ t("onboardingStep1Desc") }}</p>
+            <ul>
+              <li>{{ t("onboardingStep1a") }}</li>
+              <li>{{ t("onboardingStep1b") }}</li>
+              <li>{{ t("onboardingStep1c") }}</li>
+            </ul>
+          </div>
+
+          <div class="onboarding-section">
+            <h3>⚙️ {{ t("onboardingStep2") }}</h3>
+            <p>{{ t("onboardingStep2Desc") }}</p>
+            <ul>
+              <li><strong>{{ t("modeNextLine") }}:</strong> {{ t("onboardingMode1") }}</li>
+              <li><strong>{{ t("modeCloze") }}:</strong> {{ t("onboardingMode2") }}</li>
+              <li><strong>{{ t("modeType") }}:</strong> {{ t("onboardingMode3") }}</li>
+              <li><strong>{{ t("modeVocabulary") }}:</strong> {{ t("onboardingMode4") }}</li>
+            </ul>
+          </div>
+
+          <div class="onboarding-section">
+            <h3>💡 {{ t("onboardingTips") }}</h3>
+            <ul>
+              <li>{{ t("onboardingTip1") }}</li>
+              <li>{{ t("onboardingTip2") }}</li>
+              <li>{{ t("onboardingTip3") }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn primary" @click="showOnboarding = false">{{ t("gotIt") }}</button>
+        </div>
+      </div>
+    </div>
+
     <div class="topbar">
       <div class="topbar-row">
         <div class="brand">
           <div class="brand-title">{{ t("appTitle") }}</div>
           <!-- <div class="brand-sub">{{ t("appSubtitle") }}</div> -->
         </div>
+        <button class="icon-btn" @click="showOnboarding = true" :title="t('helpButton')" :aria-label="t('helpButton')">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" />
+            <text x="12" y="15.5" text-anchor="middle" font-size="14" font-weight="bold" fill="currentColor">?</text>
+          </svg>
+        </button>
       </div>
 
       <nav class="topbar-tabs" role="tablist" aria-label="App sections">
@@ -65,18 +124,24 @@
               </div>
               <button class="icon-btn primary" @click="createNewSet()" :title="t('newSet')" :aria-label="t('newSet')">
                 <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/>
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
                 </svg>
               </button>
-              <button class="icon-btn primary" @click="renameCurrentSet()" :title="t('renameSet')" :aria-label="t('renameSet')">
+              <button class="icon-btn primary" @click="renameCurrentSet()" :title="t('renameSet')"
+                :aria-label="t('renameSet')">
                 <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="currentColor"/>
-                  <path d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/>
+                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="currentColor" />
+                  <path
+                    d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                    fill="currentColor" />
                 </svg>
               </button>
-              <button class="icon-btn danger" @click="deleteCurrentSet()" :title="t('deleteSet')" :aria-label="t('deleteSet')">
+              <button class="icon-btn danger" @click="deleteCurrentSet()" :title="t('deleteSet')"
+                :aria-label="t('deleteSet')">
                 <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                  <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 7h2v9h-2v-9zm4 0h2v9h-2v-9zM7 10h2v9H7v-9zm1-1h10l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 9h2z" fill="#d32f2f"/>
+                  <path
+                    d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 7h2v9h-2v-9zm4 0h2v9h-2v-9zM7 10h2v9H7v-9zm1-1h10l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 9h2z"
+                    fill="#d32f2f" />
                 </svg>
               </button>
             </div>
@@ -114,10 +179,9 @@
                 <button class="icon-btn primary" type="button" :aria-label="t('edit')" :title="t('edit')"
                   @click.stop="startEditSong(s.id)">
                   <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="currentColor" />
                     <path
-                      d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"
-                      fill="currentColor" />
-                    <path d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                      d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
                       fill="currentColor" />
                   </svg>
                 </button>
@@ -195,10 +259,12 @@
           <div class="modal-header">
             <div class="modal-header-content">
               <h2>{{ t("editSongJson") }}</h2>
-              <a class="help-link" href="/json-format-help.html" target="_blank" rel="noopener noreferrer" :title="t('jsonFormatHelp')">
+              <a class="help-link" href="/json-format-help.html" target="_blank" rel="noopener noreferrer"
+                :title="t('jsonFormatHelp')">
                 <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
                   <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" />
-                  <text x="12" y="16" text-anchor="middle" font-size="14" font-weight="bold" fill="currentColor">?</text>
+                  <text x="12" y="16" text-anchor="middle" font-size="14" font-weight="bold"
+                    fill="currentColor">?</text>
                 </svg>
               </a>
             </div>
@@ -240,12 +306,13 @@
 
               <div class="visual-editor-section">
                 <label>{{ t("pasteFullLyrics") }}</label>
-                <textarea v-model="visualEditData.lyricsText" class="lyrics-editor" rows="10" 
+                <textarea v-model="visualEditData.lyricsText" class="lyrics-editor" rows="10"
                   @mouseup="handleLyricsSelection"></textarea>
                 <p class="small" style="margin-top: 6px; color: #666;">
                   {{ t("selectWordsForTranslation") }}
                 </p>
-                <button v-if="!selectedText" class="btn" @click="selectedText = 'manually-opened'" style="margin-top: 8px;">
+                <button v-if="!selectedText" class="btn" @click="selectedText = 'manually-opened'"
+                  style="margin-top: 8px;">
                   {{ t("addTranslation") }}
                 </button>
               </div>
@@ -257,17 +324,19 @@
 
                 <div class="translation-section">
                   <label>{{ t("vocabularyWord") }}</label>
-                  <input v-model="translationData.word" type="text" class="editor-input" :placeholder="selectedText !== 'manually-opened' ? selectedText : t('typeHere')" />
+                  <input v-model="translationData.word" type="text" class="editor-input"
+                    :placeholder="selectedText !== 'manually-opened' ? selectedText : t('typeHere')" />
                 </div>
 
                 <div class="translation-section">
                   <label>{{ t("vocabularyTranslation") }}</label>
-                  <input v-model="translationData.translation" type="text" class="editor-input" :placeholder="t('optional')" />
+                  <input v-model="translationData.translation" type="text" class="editor-input"
+                    :placeholder="t('optional')" />
                 </div>
 
                 <div class="translation-section">
                   <label>{{ t("vocabularyExplanation") }}</label>
-                  <textarea v-model="translationData.explanation" class="explanation-editor" rows="3" 
+                  <textarea v-model="translationData.explanation" class="explanation-editor" rows="3"
                     :placeholder="t('optional')"></textarea>
                 </div>
 
@@ -364,15 +433,10 @@
                 <span v-for="(tkn, i) in clozeTokens" :key="i">
                   <template v-if="tkn.type === 'text'">{{ tkn.value }}</template>
                   <template v-else>
-                    <button
-                      class="blank-btn"
-                      :class="{ 
-                        active: findBlankIndexByToken(tkn) === activeBlankIndex && settings.clozeInput === 'choice',
-                        filled: !!tkn.filled
-                      }"
-                      :disabled="roundLocked || !!tkn.filled"
-                      @click="selectBlankByToken(tkn)"
-                    >
+                    <button class="blank-btn" :class="{
+                      active: findBlankIndexByToken(tkn) === activeBlankIndex && settings.clozeInput === 'choice',
+                      filled: !!tkn.filled
+                    }" :disabled="roundLocked || !!tkn.filled" @click="selectBlankByToken(tkn)">
                       {{ tkn.filled ?? "____" }}
                     </button>
                   </template>
@@ -429,11 +493,11 @@
             <!-- MODE: vocabulary -->
             <div v-else-if="settings.mode === 'vocabulary'">
               <h3>{{ t("modeVocabulary") }}</h3>
-              
+
               <div v-if="!currentWord" class="empty">
                 {{ t("noVocabulary") }}
               </div>
-              
+
               <div v-else>
                 <div class="vocabulary-word">
                   <div class="label">{{ t("vocabularyWord") }}</div>
@@ -442,8 +506,8 @@
 
                 <div class="vocabulary-choices">
                   <div class="small">{{ t("vocabularyHint") }}</div>
-                  <button v-for="(option, idx) in vocabChoices" :key="idx" class="choice"
-                    :disabled="roundLocked" @click="submitVocabularyChoice(option)">
+                  <button v-for="(option, idx) in vocabChoices" :key="idx" class="choice" :disabled="roundLocked"
+                    @click="submitVocabularyChoice(option)">
                     <div class="vocab-option-text">{{ option }}</div>
                   </button>
                 </div>
@@ -684,6 +748,7 @@ const LS_SETTINGS = "lyricsTrainer.settings.v1";
 const showContinue = ref(false);
 const lastWasCorrect = ref(false);
 const lastClozePick = ref<{ key: string; ok: boolean } | null>(null);
+const showOnboarding = ref(false);
 
 // Tweak these to taste
 const GOOD_MS = 1200; // show success feedback longer
@@ -906,19 +971,19 @@ const messages: Record<Lang, Messages> = {
     tooFewLines: "Too few lines. Make sure the text has multiple lines.",
     continue: "Continue",
     tryAgain: "Try again",
-    
+
     importFromFile: "Import from file",
     fileLoaded: "File loaded: {name}",
     fileReadError: "Error reading file.",
     or: "or",
-    
+
     vocabularyHint: "Choose the correct meaning.",
     vocabularyWord: "Word",
     vocabularyTranslation: "Translation",
     vocabularyExplanation: "Explanation",
     noVocabulary: "No vocabulary data for this song. Add words and translations/explanations via JSON.",
     manageVocabulary: "Manage vocabulary",
-    
+
     songSets: "Song Sets",
     newSet: "New Set",
     setName: "Set name",
@@ -926,11 +991,35 @@ const messages: Record<Lang, Messages> = {
     deleteSet: "Delete set",
     renameSet: "Rename set",
     selectSet: "Select a song set",
-    
+
     footer:
       "Local in your browser (localStorage). No network. JSON import/export available.",
+
+    // Onboarding/Help
+    helpButton: "Help & Getting Started",
+    onboardingTitle: "Getting Started with Lyrics Trainer",
+    onboardingWelcome: "Welcome to Lyrics Trainer!",
+    onboardingWelcomeDesc: "Learn song lyrics effectively with interactive exercises. Here's how to get started:",
+    onboardingStep1: "Step 1: Add Your First Song",
+    onboardingStep1Desc: "Start by adding a song to your library:",
+    onboardingStep1a: "Go to the \"Songs\" tab",
+    onboardingStep1b: "Choose \"Paste lyrics\" or \"JSON import\"",
+    onboardingStep1c: "Paste the song lyrics and click \"Add to library\"",
+    onboardingStep2: "Step 2: Choose an Exercise Mode",
+    onboardingStep2Desc: "Go to Training tab and select your preferred exercise type:",
+    onboardingMode1: "Answer MCQ or type the next line after seeing the current line",
+    onboardingMode2: "Fill in missing words. Start with 1-2 blanks and increase difficulty as you improve",
+    onboardingMode3: "Type the entire line from scratch",
+    onboardingMode4: "Learn word meanings and translations for vocabulary practice",
+    onboardingTips: "💡 Quick Tips",
+    onboardingTip1: "Try 'Fill blanks (cloze)' with random order for best learning",
+    onboardingTip2: "Show answer to learn from mistakes before continuing",
+    onboardingTip3: "Adjust difficulty and settings to match your learning pace",
+    gotIt: "Got it!",
   },
-  es: {
+  // Note: The following was a duplicate Spanish block from earlier - now consolidated
+  // into a single es: block below
+  /* es: {
     appTitle: "Entrenador de Letras (Vue)",
     appSubtitle:
       "Practica letras: siguiente línea (MCQ), cloze o escribir. Fuente: pegar o JSON.",
@@ -1118,6 +1207,239 @@ const messages: Record<Lang, Messages> = {
     
     footer:
       "Local en tu navegador (localStorage). Sin red. Importación/exportación JSON disponible.",
+
+    // Onboarding/Help
+    helpButton: "Help & Getting Started",
+    onboardingTitle: "Getting Started with Lyrics Trainer",
+    onboardingWelcome: "Welcome to Lyrics Trainer!",
+    onboardingWelcomeDesc: "Learn song lyrics effectively with interactive exercises. Here's how to get started:",
+    onboardingStep1: "Step 1: Add Your First Song",
+    onboardingStep1Desc: "Start by adding a song to your library:",
+    onboardingStep1a: "Go to the \"Songs\" tab",
+    onboardingStep1b: "Choose \"Paste lyrics\" or \"JSON import\"",
+    onboardingStep1c: "Paste the song lyrics and click \"Add to library\"",
+    onboardingStep2: "Step 2: Choose an Exercise Mode",
+    onboardingStep2Desc: "Go to Training tab and select your preferred exercise type:",
+    onboardingMode1: "Answer MCQ or type the next line after seeing the current line",
+    onboardingMode2: "Fill in missing words. Start with 1-2 blanks and increase difficulty as you improve",
+    onboardingMode3: "Type the entire line from scratch",
+    onboardingMode4: "Learn word meanings and translations for vocabulary practice",
+    onboardingTips: "💡 Quick Tips",
+    onboardingTip1: "Try 'Fill blanks (cloze)' with random order for best learning",
+    onboardingTip2: "Show answer to learn from mistakes before continuing",
+    onboardingTip3: "Adjust difficulty and settings to match your learning pace",
+    gotIt: "Got it!",
+  } */
+  es: {
+    appTitle: "Entrenador de Letras (Vue)",
+    appSubtitle:
+      "Practica letras: siguiente línea (MCQ), cloze o escribir. Fuente: pegar o JSON.",
+    resetSession: "Reiniciar sesión",
+    exportSongsJson: "Exportar songs JSON",
+
+    sourceAndSongs: "Canciones",
+    tabLibrary: "Biblioteca JSON",
+    tabPaste: "Pegar letra",
+    tabJsonImport: "Importar JSON",
+
+    sortBy: "Ordenar por",
+    sortTitle: "Título",
+    sortArtist: "Artista",
+    sortCreatedAt: "Fecha",
+    sortLines: "# líneas",
+    sortAsc: "↑",
+    sortDesc: "↓",
+
+    search: "Buscar",
+    searchPlaceholder: "buscar título/artista/álbum...",
+    linesCount: "{n} líneas",
+    tipAddSongs:
+      "Consejo: añade canciones con \'Pegar letra\' o \'Importar JSON\'.",
+
+    title: "Título",
+    titlePlaceholder: "p.ej. Yo soy la milonga criolla",
+    artist: "Artista",
+    album: "Álbum",
+    optional: "opcional",
+
+    edit: "Editar",
+    editSong: "Editar canción",
+    editSongJson: "Editar datos de canción (JSON)",
+    saveChanges: "Guardar cambios",
+    cancel: "Cancelar",
+    jsonFormatHelp: "Ayuda de formato JSON (abre en una pestaña nueva)",
+    editModeRaw: "JSON sin procesar",
+    editModeVisual: "Editor visual",
+    selectWordsForTranslation: "Selecciona palabras en la letra para agregar traducciones",
+    addTranslation: "Agregar traducción",
+    addVocab: "Agregar al vocabulario",
+    vocabularyItems: "Elementos de vocabulario",
+
+    pasteFullLyrics: "Pega la letra completa",
+    pastePlaceholder: "Pega la letra aquí...",
+    addToLibrary: "Añadir a la biblioteca",
+    clear: "Vaciar",
+    pasteHint:
+      "Las líneas se separan por salto de línea; se ignoran las vacías.",
+
+    pasteJson: "Pega JSON (songs[])",
+    jsonPlaceholder: '[{"id":"...","title":"...","lines":["..."]}]',
+    import: "Importar",
+    jsonSchemaExampleTitle: "Ejemplo de esquema JSON",
+
+    training: "Práctica",
+    chooseSongFirst: "Primero elige una canción de la biblioteca o añade una.",
+    delete: "Eliminar",
+
+    exerciseAndOptions: "Opciones",
+    uiLanguage: "Idioma de la UI",
+    exercise: "Ejercicio",
+    modeNextLine: "Siguiente línea",
+    modeCloze: "Completar huecos (cloze)",
+    modeType: "Escribir (línea completa)",
+    modeVocabulary: "Significados de palabras",
+
+    tabAbout: "Acerca de",
+    aboutTitle: "Acerca de Lyrics Trainer",
+    aboutP1:
+      "Lyrics Trainer es una herramienta gratuita en el navegador para practicar letras. Puedes entrenar con preguntas de la siguiente línea, completar huecos (cloze) y ejercicios de escritura.",
+    aboutP2:
+      "Todas las letras las proporcionas tú y se guardan localmente en tu navegador. No se necesitan cuentas, no se sube nada y no se usa seguimiento ni analítica.",
+    aboutP3:
+      "Está pensado para estudiantes de idiomas, cantantes, intérpretes y cualquiera que quiera memorizar letras de forma más eficaz.",
+
+    order: "Orden",
+    orderSequence: "En orden",
+    orderRandom: "Aleatorio",
+
+    optionCount: "# opciones",
+
+    nextLineInput: "Entrada (siguiente línea)",
+    inputChoice: "Elegir (MCQ)",
+    inputType: "Escribir",
+
+    clozeStartMissing: "Inicio (# palabras omitidas)",
+    clozeMaxMissing: "Máximo (# palabras omitidas)",
+    clozeProgression: "Aumentar dificultad al acertar",
+    clozeInput: "Entrada cloze",
+    on: "Activado",
+    off: "Desactivado",
+
+    showClozeTarget: "Mostrar palabra objetivo (ayuda)",
+    targetWordHelper: "Palabra objetivo (ayuda)",
+
+    typeMode: "Modo de escritura",
+    typeNextLine: "Escribir la siguiente línea",
+    typeCurrentLine: "Escribir la línea actual",
+    showHintLine: "Mostrar pista",
+
+    normalization: "Comparación",
+    normStrict: "Estricto",
+    normBasic: "Ignorar mayúsculas/espacios",
+    normPunct: "Ignorar mayúsculas/espacios/puntuación",
+
+    newQuestion: "Nueva pregunta",
+    showAnswer: "Mostrar respuesta",
+    hideAnswer: "Ocultar respuesta",
+
+    prompt: "Contexto",
+    answer: "Respuesta",
+
+    chooseNextLine: "Siguiente línea",
+    fillMissingWords: "Completa las palabras que faltan",
+
+    clozeChoiceHint:
+      "Haz clic en la palabra correcta por hueco. (Un hueco a la vez)",
+    clozeTypeHint:
+      "Escribe todas las palabras faltantes (separadas por espacios). El orden importa.",
+
+    blank: "Hueco",
+    blankOf: "{i} / {n}",
+
+    typeHere: "escribe aquí...",
+    check: "Comprobar",
+
+    typeHintLine: "Pista: el texto de arriba es la línea que debes escribir.",
+
+    good: "¡Correcto!",
+    notGood: "Incorrecto.",
+    correctLabel: "Correcto",
+    expectedLabel: "Esperado",
+
+    wordCorrect: "¡Palabra correcta!",
+    wordIncorrect: "Palabra incorrecta.",
+    clozeCorrect: "Cloze: ¡correcto!",
+    clozeIncorrect: "Cloze: incorrecto.",
+
+    statsScore: "Puntuación",
+    statsClozeDifficulty: "Dificultad cloze",
+    statsLineIndex: "Índice",
+
+    scoreLine: "{ok}/{total} (correctas/total)",
+    scoreLineShort: "{ok} / {total}",
+    missingWords: "{n} palabras omitidas",
+    indexOf: "{i} / {n}",
+
+    sessionReset: "Sesión reiniciada.",
+    songAdded: "Canción añadida.",
+    songUpdated: "Canción actualizada.",
+    jsonExportStarted: "Exportación JSON iniciada (descarga).",
+    jsonPasteFirst: "Primero pega el JSON.",
+    jsonParseError: "Error al parsear JSON.",
+    noValidSongs: "No se encontraron canciones válidas en el JSON.",
+    importedSongs: "Importadas: {n} canciones.",
+    importedSongSets: "Importados: {n} conjuntos de canciones.",
+    noSetSelected: "No hay conjunto de canciones seleccionado.",
+    provideTitle: "Indica un título.",
+    pasteLyricsFirst: "Primero pega la letra.",
+    tooFewLines: "Muy pocas líneas. Asegúrate de tener varias líneas.",
+    continue: "Continuar",
+    tryAgain: "Intentar de nuevo",
+
+    importFromFile: "Importar desde archivo",
+    fileLoaded: "Archivo cargado: {name}",
+    fileReadError: "Error al leer el archivo.",
+    or: "o",
+
+    vocabularyHint: "Elige el significado correcto.",
+    vocabularyWord: "Palabra",
+    vocabularyTranslation: "Traducción",
+    vocabularyExplanation: "Explicación",
+    noVocabulary: "Sin datos de vocabulario para esta canción. Añade palabras y traducciones/explicaciones mediante JSON.",
+    manageVocabulary: "Gestionar vocabulario",
+
+    songSets: "Conjuntos de canciones",
+    newSet: "Nuevo conjunto",
+    setName: "Nombre del conjunto",
+    setNamePlaceholder: "p.ej. Clásicos españoles",
+    deleteSet: "Eliminar conjunto",
+    renameSet: "Renombrar conjunto",
+    selectSet: "Selecciona un conjunto de canciones",
+
+    footer:
+      "Local en tu navegador (localStorage). Sin red. Importación/exportación JSON disponible.",
+
+    // Onboarding/Help
+    helpButton: "Ayuda y primeros pasos",
+    onboardingTitle: "Primeros pasos con Lyrics Trainer",
+    onboardingWelcome: "¡Bienvenido a Lyrics Trainer!",
+    onboardingWelcomeDesc: "Aprende letras de canciones de forma efectiva con ejercicios interactivos. Aquí te mostramos cómo empezar:",
+    onboardingStep1: "Paso 1: Añade tu primera canción",
+    onboardingStep1Desc: "Comienza añadiendo una canción a tu biblioteca:",
+    onboardingStep1a: "Ve a la pestaña \"Canciones\"",
+    onboardingStep1b: "Elige \"Pegar letra\" o \"Importar JSON\"",
+    onboardingStep1c: "Pega la letra de la canción y haz clic en \"Añadir a la biblioteca\"",
+    onboardingStep2: "Paso 2: Elige un tipo de ejercicio",
+    onboardingStep2Desc: "Ve a la pestaña Práctica y selecciona tu tipo de ejercicio preferido:",
+    onboardingMode1: "Responde MCQ o escribe la siguiente línea después de ver la línea actual",
+    onboardingMode2: "Completa palabras faltantes. Comienza con 1-2 huecos e incrementa la dificultad a medida que mejoras",
+    onboardingMode3: "Escribe la línea completa desde cero",
+    onboardingMode4: "Aprende significados de palabras y traducciones para práctica de vocabulario",
+    onboardingTips: "💡 Consejos rápidos",
+    onboardingTip1: "Prueba 'Completar huecos (cloze)' con orden aleatorio para un mejor aprendizaje",
+    onboardingTip2: "Muestra la respuesta para aprender de los errores antes de continuar",
+    onboardingTip3: "Ajusta la dificultad y configuración para que coincida con tu ritmo de aprendizaje",
+    gotIt: "¡Entendido!",
   },
 };
 
@@ -1245,31 +1567,31 @@ function getCurrentSet(): SongSet | null {
 function createNewSet() {
   const name = prompt(t("setName"));
   if (!name || !name.trim()) return;
-  
+
   const newSet: SongSet = {
     id: cryptoRandomId(),
     name: name.trim(),
     createdAt: new Date().toISOString(),
     songs: [],
   };
-  
+
   songSets.value.push(newSet);
   currentSetId.value = newSet.id;
   currentSongId.value = null;
-  
+
   setFeedback(true, `Set "${newSet.name}" created.`);
 }
 
 function deleteCurrentSet() {
   const set = getCurrentSet();
   if (!set) return;
-  
+
   if (!confirm(`Delete set "${set.name}"? This cannot be undone.`)) return;
-  
+
   songSets.value = songSets.value.filter((s) => s.id !== set.id);
   currentSetId.value = songSets.value.length ? songSets.value[0].id : null;
   currentSongId.value = null;
-  
+
   setFeedback(true, `Set deleted.`);
   resetRound(true);
 }
@@ -1277,13 +1599,13 @@ function deleteCurrentSet() {
 function renameCurrentSet() {
   const set = getCurrentSet();
   if (!set) return;
-  
+
   const newName = prompt(t("setName"), set.name);
   if (!newName || !newName.trim()) return;
-  
+
   const trimmed = newName.trim();
   if (trimmed === set.name) return;
-  
+
   set.name = trimmed;
   setFeedback(true, `Set renamed to "${trimmed}".`);
 }
@@ -1436,7 +1758,7 @@ const sortedFilteredSongs = computed(() => {
 onMounted(() => {
   loadSongs();
   loadSettings();
-  
+
   // Initialize default set if none exist
   if (!songSets.value.length) {
     const defaultSet: SongSet = {
@@ -1449,7 +1771,7 @@ onMounted(() => {
     currentSetId.value = defaultSet.id;
     persistSongs();
   }
-  
+
   // Always ensure "Lyrics Trainer Demo Set" exists (even if local storage exists)
   const demoSetExists = songSets.value.some((s) => s.name === "Lyrics Trainer Demo Set");
   if (!demoSetExists) {
@@ -1462,18 +1784,18 @@ onMounted(() => {
     songSets.value.push(demoSet);
     persistSongs();
   }
-  
+
   // Ensure current set is selected
   if (!currentSetId.value && songSets.value.length) {
     currentSetId.value = songSets.value[0].id;
   }
-  
+
   // Ensure current song is selected from current set
   const currentSet = getCurrentSet();
   if (!currentSongId.value && currentSet?.songs.length) {
     currentSongId.value = currentSet.songs[0].id;
   }
-  
+
   resetRound(true);
 });
 
@@ -1499,7 +1821,7 @@ function loadSongs() {
   if (!raw) return;
   try {
     const parsed = JSON.parse(raw) as any;
-    
+
     // New format: with sets
     if (Array.isArray(parsed.songSets) && parsed.songSets.length > 0) {
       songSets.value = parsed.songSets;
@@ -1507,7 +1829,7 @@ function loadSongs() {
       currentSongId.value = parsed.currentSongId || null;
       return;
     }
-    
+
     // Legacy format: flat songs array. Convert to "Existing Songs" set for backward compatibility
     if (Array.isArray(parsed.songs) && parsed.songs.length > 0) {
       const existingSet: SongSet = {
@@ -1556,9 +1878,9 @@ function persistSettings() {
 function deleteSongById(id: string) {
   const set = getCurrentSet();
   if (!set) return;
-  
+
   set.songs = set.songs.filter((x) => x.id !== id);
-  
+
   if (currentSongId.value === id) {
     currentSongId.value = set.songs.length ? set.songs[0].id : null;
   }
@@ -1571,19 +1893,19 @@ function startEditSong(id: string) {
   editingSongId.value = id;
   editJsonText.value = JSON.stringify(song, null, 2);
   editMode.value = "visual";
-  
+
   // Initialize visual editor data
   visualEditData.title = song.title || "";
   visualEditData.artist = song.artist || "";
   visualEditData.album = song.album || "";
   visualEditData.lyricsText = song.lines.join("\n");
   visualEditData.vocabulary = song.vocabulary ? [...song.vocabulary] : [];
-  
+
   selectedText.value = "";
   translationData.word = "";
   translationData.translation = "";
   translationData.explanation = "";
-  
+
   feedback.message = "";
   feedback.details = "";
 }
@@ -1593,7 +1915,7 @@ function saveEditedSong() {
 
   try {
     let updated: any;
-    
+
     if (editMode.value === "raw") {
       // Parse JSON from raw mode
       updated = JSON.parse(editJsonText.value);
@@ -1612,7 +1934,7 @@ function saveEditedSong() {
         createdAt: songs.value.find((s) => s.id === editingSongId.value)?.createdAt || new Date().toISOString(),
       };
     }
-    
+
     // Validate the updated song
     const validated = sanitizeSong(updated);
     if (!validated) {
@@ -1640,10 +1962,10 @@ function saveEditedSong() {
 function handleLyricsSelection() {
   const textarea = document.querySelector(".lyrics-editor") as HTMLTextAreaElement;
   if (!textarea) return;
-  
+
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
-  
+
   if (start !== end) {
     // Text is selected
     selectedText.value = textarea.value.substring(start, end).trim();
@@ -1657,25 +1979,25 @@ function handleLyricsSelection() {
 function addVocabularyItem() {
   const word = translationData.word.trim();
   const translation = translationData.translation.trim();
-  
+
   if (!word || !translation) {
     return setFeedback(false, t("provideTitle"), "Word and translation are required");
   }
-  
+
   const vocabItem: Word = {
     word,
     translation,
     explanation: translationData.explanation.trim() || undefined,
   };
-  
+
   visualEditData.vocabulary.push(vocabItem);
-  
+
   // Clear the form
   translationData.word = "";
   translationData.translation = "";
   translationData.explanation = "";
   selectedText.value = null;
-  
+
   setFeedback(true, t("addVocab"));
 }
 
@@ -1757,16 +2079,16 @@ function importSongsJson() {
   if (!raw) return setFeedback(false, t("jsonPasteFirst"));
   try {
     const parsed = JSON.parse(raw);
-    
+
     // Check if it's a complete sets export (new format)
     if (Array.isArray(parsed.songSets)) {
       // Import complete sets collection
       const incomingSets = parsed.songSets as any[];
-      
+
       // Merge with existing sets (by ID to avoid duplicates)
       const setById = new Map<string, SongSet>();
       for (const set of songSets.value) setById.set(set.id, set);
-      
+
       let importedCount = 0;
       for (const incomingSet of incomingSets) {
         const validated = validateSongSet(incomingSet);
@@ -1775,19 +2097,19 @@ function importSongsJson() {
           importedCount++;
         }
       }
-      
+
       songSets.value = Array.from(setById.values());
       if (!currentSetId.value && songSets.value.length) {
         currentSetId.value = songSets.value[0].id;
       }
-      
+
       setFeedback(true, t("importedSongSets", { n: importedCount }));
       jsonImportText.value = "";
       sourceTab.value = "library";
       resetRound(true);
       return;
     }
-    
+
     // Legacy/single format: array of songs or { songs: [] }
     const incomingSongs: Song[] = Array.isArray(parsed)
       ? parsed
@@ -1884,7 +2206,7 @@ function resetRoundUiState() {
   showContinue.value = false;
   lastWasCorrect.value = false;
   lastClozePick.value = null;
-  
+
   // NOTE: Do NOT reset cloze progression counters here - they should persist across lines
   // clozeConsecutiveCorrect and clozeConsecutiveIncorrect only reset in resetRound(resetIndex: true)
 }
@@ -1930,7 +2252,7 @@ function newPrompt() {
 
 function buildPromptAndAnswer() {
   if (!currentSong.value) return;
-  
+
   // For vocabulary mode, don't show prompt/answer lines
   if (settings.mode === "vocabulary") {
     promptLine.value = "";
@@ -2080,11 +2402,11 @@ function submitClozeChoice(word: string) {
   if (ok) {
     blank.filled = blank.correct;
     setFeedback(true, t("wordCorrect"));
-    
+
     // Track progression on each correct blank
     clozeConsecutiveIncorrect.value = 0;
     clozeConsecutiveCorrect.value += 1;
-    
+
     // Increase difficulty after 4 consecutive correct answers
     if (settings.clozeProgression === "on" && clozeConsecutiveCorrect.value >= 4) {
       clozeMissingCount.value = clamp(
@@ -2115,11 +2437,11 @@ function submitClozeChoice(word: string) {
       t("wordIncorrect"),
       `${t("correctLabel")}: "${blank.correct}"`
     );
-    
+
     // Track progression on incorrect blank
     clozeConsecutiveCorrect.value = 0;
     clozeConsecutiveIncorrect.value += 1;
-    
+
     // Decrease difficulty after 2 consecutive incorrect answers
     if (settings.clozeProgression === "on" && clozeConsecutiveIncorrect.value >= 2) {
       clozeMissingCount.value = clamp(
@@ -2129,7 +2451,7 @@ function submitClozeChoice(word: string) {
       );
       clozeConsecutiveIncorrect.value = 0; // Reset counter after decreasing
     }
-    
+
     // keep roundLocked = false so they can try again
   }
 }
@@ -2171,7 +2493,7 @@ function submitVocabularyChoice(chosenOption: string) {
   if (!currentWord.value) return;
 
   roundLocked.value = true;
-  
+
   // The correct answer is either translation or explanation (prefer translation)
   const correct = currentWord.value.translation || currentWord.value.explanation || "";
   const ok = chosenOption === correct;
@@ -2206,7 +2528,7 @@ function buildVocabularyOptions() {
 
   // Build choices from all possible answers (translations + explanations) from vocabulary
   const correctAnswer = currentWord.value.translation || currentWord.value.explanation || "";
-  
+
   if (!currentSong.value?.vocabulary) {
     vocabChoices.value = [];
     return;
@@ -2553,15 +2875,15 @@ function validateSongSet(x: any): SongSet | null {
   const id = String(x.id ?? cryptoRandomId());
   const name = String(x.name ?? "").trim();
   const createdAt = x.createdAt ? String(x.createdAt) : new Date().toISOString();
-  
+
   const songs = Array.isArray(x.songs)
     ? x.songs
-        .map((s: any) => sanitizeSong(s))
-        .filter((s): s is Song => !!s && s.lines.length >= 2 && !!s.title)
+      .map((s: any) => sanitizeSong(s))
+      .filter((s): s is Song => !!s && s.lines.length >= 2 && !!s.title)
     : [];
-  
+
   if (!name || !songs.length) return null;
-  
+
   return {
     id,
     name,
@@ -2783,6 +3105,15 @@ body {
   border-bottom: 1px solid rgba(0, 0, 0, 0.15);
 }
 
+.topbar-row {
+  display: flex;
+  justify-content: center;
+  /* horizontal centering */
+  align-items: center;
+  /* vertical centering */
+
+}
+
 .topbar-actions {
   display: flex;
   gap: 8px;
@@ -2857,7 +3188,8 @@ body {
 .topbar-tab {
   appearance: none;
   border: 0;
-  border-radius: 0;       /* 🚫 no rounding */
+  border-radius: 0;
+  /* 🚫 no rounding */
 
   background: transparent;
   color: rgba(255, 255, 255, 0.9);
@@ -2877,8 +3209,10 @@ body {
 
 .topbar-tab.active {
   color: #ffffff;
-  background: transparent;          /* no block */
-  border: 0px 2px 0px 0px solid #ffffff; /* classic tab indicator */
+  background: transparent;
+  /* no block */
+  border: 0px 2px 0px 0px solid #ffffff;
+  /* classic tab indicator */
 }
 
 .app-tabs {
@@ -2976,7 +3310,7 @@ main.grid {
   min-width: 0;
 }
 
-.row-grow > select {
+.row-grow>select {
   flex: 1;
 }
 
@@ -3131,15 +3465,15 @@ textarea {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  border: 1px solid #d6d6d6;
-  background: #f2f2f2;
-  color: #111;
+  border: 0px solid #d6d6d6;
+  background: #f2f2f200;
+  color: #ffffff;
   cursor: pointer;
   padding: 0;
 }
 
 .icon-btn:hover {
-  background: #eaeaea;
+  border: 1px solid #d6d6d6;
 }
 
 .icon-btn.danger {
