@@ -364,7 +364,17 @@
                 <span v-for="(tkn, i) in clozeTokens" :key="i">
                   <template v-if="tkn.type === 'text'">{{ tkn.value }}</template>
                   <template v-else>
-                    <span class="blank">{{ tkn.filled ?? "____" }}</span>
+                    <button
+                      class="blank-btn"
+                      :class="{ 
+                        active: findBlankIndexByToken(tkn) === activeBlankIndex && settings.clozeInput === 'choice',
+                        filled: !!tkn.filled
+                      }"
+                      :disabled="roundLocked || !!tkn.filled"
+                      @click="selectBlankByToken(tkn)"
+                    >
+                      {{ tkn.filled ?? "____" }}
+                    </button>
                   </template>
                 </span>
               </div>
@@ -372,17 +382,8 @@
               <div v-if="settings.clozeInput === 'choice'">
                 <div class="small">{{ t("clozeChoiceHint") }}</div>
 
-                <div class="row">
+                <div class="row" v-if="settings.showClozeTarget === 'on'">
                   <div class="field" style="flex: 1">
-                    <label>{{ t("blank") }}</label>
-                    <select v-model.number="activeBlankIndex" :disabled="roundLocked">
-                      <option v-for="(_b, idx) in clozeBlanks" :key="idx" :value="idx">
-                        {{ t("blankOf", { i: idx + 1, n: clozeBlanks.length }) }}
-                      </option>
-                    </select>
-                  </div>
-
-                  <div class="field" style="flex: 1" v-if="settings.showClozeTarget === 'on'">
                     <label>{{ t("targetWordHelper") }}</label>
                     <input :value="clozeBlanks[activeBlankIndex]?.correct ?? ''" disabled />
                   </div>
@@ -2252,6 +2253,24 @@ function findNextUnfilledBlankIndex(): number {
     if (!clozeBlanks.value[i].filled) return i;
   }
   return -1;
+}
+
+function findBlankIndexByToken(token: ClozeToken): number {
+  if (token.type !== "blank") return -1;
+  return clozeBlanks.value.indexOf(token as Extract<ClozeToken, { type: "blank" }>);
+}
+
+function selectBlankByToken(token: ClozeToken): void {
+  if (token.type !== "blank" || roundLocked.value) return;
+  const idx = findBlankIndexByToken(token);
+  if (idx !== -1 && !isBlankFilled(idx)) {
+    activeBlankIndex.value = idx;
+    // Regenerate choices for the selected blank
+    const blank = clozeBlanks.value[idx];
+    if (blank && settings.clozeInput === "choice") {
+      clozeChoices.value = buildClozeChoices(blank.correct, settings.optionCount);
+    }
+  }
 }
 
 /**
