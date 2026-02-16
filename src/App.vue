@@ -56,33 +56,47 @@
           <div v-if="sourceTab === 'library'" class="panel">
             <div class="row">
               <label>{{ t("songSets") }}</label>
-              <select v-model="currentSetId">
-                <option v-for="set in songSets" :key="set.id" :value="set.id">
-                  {{ set.name }} ({{ set.songs.length }})
-                </option>
-              </select>
-              <button class="btn" @click="createNewSet()">{{ t("newSet") }}</button>
-              <button class="btn" @click="renameCurrentSet()">{{ t("renameSet") }}</button>
-              <button class="btn" @click="deleteCurrentSet()">{{ t("deleteSet") }}</button>
-            </div>
-
-            <div class="row">
-              <label>{{ t("sortBy") }}</label>
-              <select v-model="songSort.key">
-                <option value="title">{{ t("sortTitle") }}</option>
-                <option value="artist">{{ t("sortArtist") }}</option>
-                <option value="createdAt">{{ t("sortCreatedAt") }}</option>
-                <option value="lines">{{ t("sortLines") }}</option>
-              </select>
-              <select v-model="songSort.dir">
-                <option value="asc">{{ t("sortAsc") }}</option>
-                <option value="desc">{{ t("sortDesc") }}</option>
-              </select>
+              <div class="row-grow">
+                <select v-model="currentSetId">
+                  <option v-for="set in songSets" :key="set.id" :value="set.id">
+                    {{ set.name }} ({{ set.songs.length }})
+                  </option>
+                </select>
+              </div>
+              <button class="icon-btn primary" @click="createNewSet()" :title="t('newSet')" :aria-label="t('newSet')">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/>
+                </svg>
+              </button>
+              <button class="icon-btn primary" @click="renameCurrentSet()" :title="t('renameSet')" :aria-label="t('renameSet')">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="currentColor"/>
+                  <path d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/>
+                </svg>
+              </button>
+              <button class="icon-btn danger" @click="deleteCurrentSet()" :title="t('deleteSet')" :aria-label="t('deleteSet')">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                  <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 7h2v9h-2v-9zm4 0h2v9h-2v-9zM7 10h2v9H7v-9zm1-1h10l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 9h2z" fill="#d32f2f"/>
+                </svg>
+              </button>
             </div>
 
             <div class="row">
               <label>{{ t("search") }}</label>
-              <input v-model="songSearch" :placeholder="t('searchPlaceholder')" />
+              <input v-model="songSearch" :placeholder="t('searchPlaceholder')" class="search-input" />
+              <div class="sort-controls">
+                <label class="sort-label">{{ t("sortBy") }}</label>
+                <select v-model="songSort.key" class="sort-select">
+                  <option value="title">{{ t("sortTitle") }}</option>
+                  <option value="artist">{{ t("sortArtist") }}</option>
+                  <option value="createdAt">{{ t("sortCreatedAt") }}</option>
+                  <option value="lines">{{ t("sortLines") }}</option>
+                </select>
+                <select v-model="songSort.dir" class="sort-select-dir">
+                  <option value="asc">{{ t("sortAsc") }}</option>
+                  <option value="desc">{{ t("sortDesc") }}</option>
+                </select>
+              </div>
             </div>
 
             <div class="song-list">
@@ -113,7 +127,7 @@
                   <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
                     <path
                       d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 7h2v9h-2v-9zm4 0h2v9h-2v-9zM7 10h2v9H7v-9zm1-1h10l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 9h2z"
-                      fill="currentColor" />
+                      fill="#d32f2f" />
                   </svg>
                 </button>
               </div>
@@ -2905,6 +2919,48 @@ main.grid {
   width: 110px;
   color: #444;
   font-size: 13px;
+  flex-shrink: 0;
+}
+
+.row-grow {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+
+.row-grow > select {
+  flex: 1;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.sort-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.sort-label {
+  width: auto;
+  color: #444;
+  font-size: 13px;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.sort-select {
+  width: 130px;
+  flex-shrink: 0;
+}
+
+.sort-select-dir {
+  width: 60px;
+  flex-shrink: 0;
 }
 
 input,
