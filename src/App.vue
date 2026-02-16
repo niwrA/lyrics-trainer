@@ -1357,6 +1357,8 @@ const clozeBlanks = computed(() =>
 const activeBlankIndex = ref(0);
 const clozeChoices = ref<string[]>([]);
 const clozeMissingCount = ref(1);
+const clozeConsecutiveCorrect = ref(0);
+const clozeConsecutiveIncorrect = ref(0);
 
 const typedInput = ref("");
 
@@ -1882,6 +1884,9 @@ function resetRoundUiState() {
   showContinue.value = false;
   lastWasCorrect.value = false;
   lastClozePick.value = null;
+  
+  // NOTE: Do NOT reset cloze progression counters here - they should persist across lines
+  // clozeConsecutiveCorrect and clozeConsecutiveIncorrect only reset in resetRound(resetIndex: true)
 }
 
 function resetRound(resetIndex: boolean) {
@@ -1894,6 +1899,9 @@ function resetRound(resetIndex: boolean) {
   if (resetIndex) {
     currentIndex.value =
       settings.order === "sequence" ? 0 : randomInt(0, n - 2);
+    // Also reset cloze progression counters on full reset
+    clozeConsecutiveCorrect.value = 0;
+    clozeConsecutiveIncorrect.value = 0;
   }
 
   clozeMissingCount.value = clamp(
@@ -2072,10 +2080,27 @@ function submitClozeChoice(word: string) {
   if (ok) {
     blank.filled = blank.correct;
     setFeedback(true, t("wordCorrect"));
+    
+    // Track progression on each correct blank
+    clozeConsecutiveIncorrect.value = 0;
+    clozeConsecutiveCorrect.value += 1;
+    
+    // Increase difficulty after 4 consecutive correct answers
+    if (settings.clozeProgression === "on" && clozeConsecutiveCorrect.value >= 4) {
+      clozeMissingCount.value = clamp(
+        clozeMissingCount.value + 1,
+        1,
+        settings.clozeMaxMissing
+      );
+      clozeConsecutiveCorrect.value = 0; // Reset counter after increasing
+    }
 
     const nextIdx = findNextUnfilledBlankIndex();
     if (nextIdx === -1) {
-      finalizeClozeRound(true);
+      // All blanks filled, finalize the round
+      stats.total += 1;
+      stats.correct += 1;
+      advanceAfterCorrect();
     } else {
       activeBlankIndex.value = nextIdx;
       lastClozePick.value = null; // ✅ reset for next blank
@@ -2090,6 +2115,21 @@ function submitClozeChoice(word: string) {
       t("wordIncorrect"),
       `${t("correctLabel")}: "${blank.correct}"`
     );
+    
+    // Track progression on incorrect blank
+    clozeConsecutiveCorrect.value = 0;
+    clozeConsecutiveIncorrect.value += 1;
+    
+    // Decrease difficulty after 2 consecutive incorrect answers
+    if (settings.clozeProgression === "on" && clozeConsecutiveIncorrect.value >= 2) {
+      clozeMissingCount.value = clamp(
+        clozeMissingCount.value - 1,
+        1,
+        settings.clozeMaxMissing
+      );
+      clozeConsecutiveIncorrect.value = 0; // Reset counter after decreasing
+    }
+    
     // keep roundLocked = false so they can try again
   }
 }
@@ -2120,21 +2160,9 @@ function finalizeClozeRound(ok: boolean, details?: string) {
 
   if (ok) {
     setFeedback(true, t("clozeCorrect"));
-    if (settings.clozeProgression === "on")
-      clozeMissingCount.value = clamp(
-        clozeMissingCount.value + 1,
-        1,
-        settings.clozeMaxMissing
-      );
     advanceAfterCorrect();
   } else {
     setFeedback(false, t("clozeIncorrect"), details);
-    if (settings.clozeProgression === "on")
-      clozeMissingCount.value = clamp(
-        clozeMissingCount.value - 1,
-        1,
-        settings.clozeMaxMissing
-      );
   }
 }
 
