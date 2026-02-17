@@ -348,13 +348,30 @@
 
               <div v-if="visualEditData.vocabulary && visualEditData.vocabulary.length > 0" class="vocabulary-list">
                 <h4>{{ t("vocabularyItems") }} ({{ visualEditData.vocabulary.length }})</h4>
-                <div v-for="(item, idx) in visualEditData.vocabulary" :key="idx" class="vocab-item">
-                  <div class="vocab-word">{{ item.word }}</div>
-                  <div class="vocab-meaning">
-                    <span v-if="item.translation">{{ item.translation }}</span>
-                    <span v-else-if="item.explanation">{{ item.explanation }}</span>
+                <div class="vocab-items-container">
+                  <div v-for="(item, idx) in visualEditData.vocabulary" :key="idx" class="vocab-item-row">
+                    <div class="vocab-item-fields">
+                      <div class="vocab-field">
+                        <label class="vocab-label">{{ t("vocabularyWord") }}</label>
+                        <input v-model="item.word" type="text" class="vocab-input" />
+                      </div>
+                      <div class="vocab-field">
+                        <label class="vocab-label">{{ t("vocabularyTranslation") }}</label>
+                        <input v-model="item.translation" type="text" class="vocab-input" />
+                      </div>
+                      <div class="vocab-field">
+                        <label class="vocab-label">{{ t("vocabularyExplanation") }}</label>
+                        <input v-model="item.explanation" type="text" class="vocab-input" />
+                      </div>
+                    </div>
+                    <button class="vocab-remove-btn" @click="removeVocabularyItem(idx)" :title="t('delete')" :aria-label="t('delete')">
+                      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                        <path
+                          d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 7h2v9h-2v-9zm4 0h2v9h-2v-9zM7 10h2v9H7v-9zm1-1h10l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 9h2z"
+                          fill="#d32f2f" />
+                      </svg>
+                    </button>
                   </div>
-                  <button class="vocab-remove" @click="removeVocabularyItem(idx)">✕</button>
                 </div>
               </div>
             </div>
@@ -391,6 +408,17 @@
                   <span> • {{ t("linesCount", { n: currentSong.lines.length }) }}</span>
                 </div>
               </div>
+            </div>
+
+            <!-- MODE SELECTOR IN TRAINING -->
+            <div class="training-mode-selector">
+              <label>{{ t("exercise") }}</label>
+              <select v-model="settings.mode" @change="resetRound(true)">
+                <option value="nextLine">{{ t("modeNextLine") }}</option>
+                <option value="cloze">{{ t("modeCloze") }}</option>
+                <option value="type">{{ t("modeType") }}</option>
+                <option value="vocabulary">{{ t("modeVocabulary") }}</option>
+              </select>
             </div>
 
             <div v-if="settings.mode !== 'vocabulary'" class="prompt">
@@ -516,10 +544,6 @@
 
             <div class="row">
               <div class="row">
-                <button class="btn" @click="revealAnswer = !revealAnswer">
-                  {{ revealAnswer ? t("hideAnswer") : t("showAnswer") }}
-                </button>
-
                 <!-- ✅ only after wrong answer -->
                 <button v-if="showContinue" class="btn" @click="continueAfterWrong()">
                   {{ t("continue") }}
@@ -535,7 +559,7 @@
 
             <div class="feedback" v-if="feedback.message">
               <div :class="['pill', feedback.ok ? 'ok' : 'bad']">{{ feedback.message }}</div>
-              <div class="small" v-if="feedback.details">{{ feedback.details }}</div>
+              <div class="pill pill-info" v-if="feedback.details">{{ feedback.details }}</div>
             </div>
 
             <div class="stats">
@@ -570,110 +594,124 @@
           <div v-if="!currentSong" class="empty">{{ t("chooseSongFirst") }}</div>
 
           <div v-else>
-            <div class="settings-grid">
-              <div class="field">
-                <label>{{ t("uiLanguage") }}</label>
-                <select v-model="settings.uiLang" @change="resetRound(false)">
-                  <option value="en">English</option>
-                  <option value="es">Español</option>
-                </select>
-              </div>
+            <!-- GLOBAL SETTINGS -->
+            <div class="settings-section settings-global">
+              <h3 class="settings-section-title">{{ t("exerciseAndOptions") }}</h3>
+              <div class="settings-grid">
+                <div class="field">
+                  <label>{{ t("uiLanguage") }}</label>
+                  <select v-model="settings.uiLang" @change="resetRound(false)">
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                  </select>
+                </div>
 
-              <div class="field">
-                <label>{{ t("exercise") }}</label>
-                <select v-model="settings.mode" @change="resetRound(true)">
-                  <option value="nextLine">{{ t("modeNextLine") }}</option>
-                  <option value="cloze">{{ t("modeCloze") }}</option>
-                  <option value="type">{{ t("modeType") }}</option>
-                  <option value="vocabulary">{{ t("modeVocabulary") }}</option>
-                </select>
-              </div>
+                <div class="field">
+                  <label>{{ t("exercise") }}</label>
+                  <select v-model="settings.mode" @change="resetRound(true)">
+                    <option value="nextLine">{{ t("modeNextLine") }}</option>
+                    <option value="cloze">{{ t("modeCloze") }}</option>
+                    <option value="type">{{ t("modeType") }}</option>
+                    <option value="vocabulary">{{ t("modeVocabulary") }}</option>
+                  </select>
+                </div>
 
-              <div class="field">
-                <label>{{ t("order") }}</label>
-                <select v-model="settings.order" @change="resetRound(true)">
-                  <option value="sequence">{{ t("orderSequence") }}</option>
-                  <option value="random">{{ t("orderRandom") }}</option>
-                </select>
-              </div>
+                <div class="field">
+                  <label>{{ t("order") }}</label>
+                  <select v-model="settings.order" @change="resetRound(true)">
+                    <option value="sequence">{{ t("orderSequence") }}</option>
+                    <option value="random">{{ t("orderRandom") }}</option>
+                  </select>
+                </div>
 
-              <div class="field">
-                <label>{{ t("optionCount") }}</label>
-                <select v-model.number="settings.optionCount" @change="resetRound(true)">
-                  <option :value="3">3</option>
-                  <option :value="4">4</option>
-                  <option :value="5">5</option>
-                  <option :value="6">6</option>
-                </select>
-              </div>
+                <div class="field">
+                  <label>{{ t("optionCount") }}</label>
+                  <select v-model.number="settings.optionCount" @change="resetRound(true)">
+                    <option :value="3">3</option>
+                    <option :value="4">4</option>
+                    <option :value="5">5</option>
+                    <option :value="6">6</option>
+                  </select>
+                </div>
 
-              <div class="field" v-if="settings.mode === 'nextLine'">
-                <label>{{ t("nextLineInput") }}</label>
-                <select v-model="settings.nextLineInput" @change="resetRound(false)">
-                  <option value="choice">{{ t("inputChoice") }}</option>
-                  <option value="type">{{ t("inputType") }}</option>
-                </select>
+                <div class="field">
+                  <label>{{ t("normalization") }}</label>
+                  <select v-model="settings.normalize" @change="resetRound(false)">
+                    <option value="strict">{{ t("normStrict") }}</option>
+                    <option value="basic">{{ t("normBasic") }}</option>
+                    <option value="punct">{{ t("normPunct") }}</option>
+                  </select>
+                </div>
               </div>
+            </div>
 
-              <div class="field" v-if="settings.mode === 'cloze'">
-                <label>{{ t("clozeStartMissing") }}</label>
-                <input type="number" min="1" :max="12" v-model.number="settings.clozeStartMissing"
-                  @change="resetRound(true)" />
-              </div>
+            <!-- MODE-SPECIFIC SETTINGS -->
+            <div class="settings-section settings-mode">
+              <h3 class="settings-section-title">{{ t("modeSettings") }}</h3>
+              <div class="settings-grid">
+                <div class="field" v-if="settings.mode === 'nextLine'">
+                  <label>{{ t("nextLineInput") }}</label>
+                  <select v-model="settings.nextLineInput" @change="resetRound(false)">
+                    <option value="choice">{{ t("inputChoice") }}</option>
+                    <option value="type">{{ t("inputType") }}</option>
+                  </select>
+                </div>
 
-              <div class="field" v-if="settings.mode === 'cloze'">
-                <label>{{ t("clozeMaxMissing") }}</label>
-                <input type="number" min="1" :max="16" v-model.number="settings.clozeMaxMissing"
-                  @change="resetRound(true)" />
-              </div>
+                <div class="field" v-if="settings.mode === 'cloze'">
+                  <label>{{ t("clozeStartMissing") }}</label>
+                  <input type="number" min="1" :max="12" v-model.number="settings.clozeStartMissing"
+                    @change="resetRound(true)" />
+                </div>
 
-              <div class="field" v-if="settings.mode === 'cloze'">
-                <label>{{ t("clozeProgression") }}</label>
-                <select v-model="settings.clozeProgression" @change="resetRound(true)">
-                  <option value="on">{{ t("on") }}</option>
-                  <option value="off">{{ t("off") }}</option>
-                </select>
-              </div>
+                <div class="field" v-if="settings.mode === 'cloze'">
+                  <label>{{ t("clozeMaxMissing") }}</label>
+                  <input type="number" min="1" :max="16" v-model.number="settings.clozeMaxMissing"
+                    @change="resetRound(true)" />
+                </div>
 
-              <div class="field" v-if="settings.mode === 'cloze'">
-                <label>{{ t("clozeInput") }}</label>
-                <select v-model="settings.clozeInput" @change="resetRound(true)">
-                  <option value="choice">{{ t("inputChoice") }}</option>
-                  <option value="type">{{ t("inputType") }}</option>
-                </select>
-              </div>
+                <div class="field" v-if="settings.mode === 'cloze'">
+                  <label>{{ t("clozeProgression") }}</label>
+                  <select v-model="settings.clozeProgression" @change="resetRound(true)">
+                    <option value="on">{{ t("on") }}</option>
+                    <option value="off">{{ t("off") }}</option>
+                  </select>
+                </div>
 
-              <div class="field" v-if="settings.mode === 'cloze' && settings.clozeInput === 'choice'">
-                <label>{{ t("showClozeTarget") }}</label>
-                <select v-model="settings.showClozeTarget" @change="resetRound(false)">
-                  <option value="off">{{ t("off") }}</option>
-                  <option value="on">{{ t("on") }}</option>
-                </select>
-              </div>
+                <div class="field" v-if="settings.mode === 'cloze'">
+                  <label>{{ t("clozeInput") }}</label>
+                  <select v-model="settings.clozeInput" @change="resetRound(true)">
+                    <option value="choice">{{ t("inputChoice") }}</option>
+                    <option value="type">{{ t("inputType") }}</option>
+                  </select>
+                </div>
 
-              <div class="field" v-if="settings.mode === 'type'">
-                <label>{{ t("typeMode") }}</label>
-                <select v-model="settings.typeTarget" @change="resetRound(true)">
-                  <option value="nextLine">{{ t("typeNextLine") }}</option>
-                  <option value="currentLine">{{ t("typeCurrentLine") }}</option>
-                </select>
-              </div>
+                <div class="field" v-if="settings.mode === 'cloze' && settings.clozeInput === 'choice'">
+                  <label>{{ t("showClozeTarget") }}</label>
+                  <select v-model="settings.showClozeTarget" @change="resetRound(false)">
+                    <option value="off">{{ t("off") }}</option>
+                    <option value="on">{{ t("on") }}</option>
+                  </select>
+                </div>
 
-              <div class="field">
-                <label>{{ t("normalization") }}</label>
-                <select v-model="settings.normalize" @change="resetRound(false)">
-                  <option value="strict">{{ t("normStrict") }}</option>
-                  <option value="basic">{{ t("normBasic") }}</option>
-                  <option value="punct">{{ t("normPunct") }}</option>
-                </select>
-              </div>
+                <div class="field" v-if="settings.mode === 'type'">
+                  <label>{{ t("typeMode") }}</label>
+                  <select v-model="settings.typeTarget" @change="resetRound(true)">
+                    <option value="nextLine">{{ t("typeNextLine") }}</option>
+                    <option value="currentLine">{{ t("typeCurrentLine") }}</option>
+                  </select>
+                </div>
 
-              <div class="field" v-if="settings.mode === 'type' && settings.typeTarget === 'currentLine'">
-                <label>{{ t("showHintLine") }}</label>
-                <select v-model="settings.showHintLine" @change="resetRound(true)">
-                  <option value="on">{{ t("on") }}</option>
-                  <option value="off">{{ t("off") }}</option>
-                </select>
+                <div class="field" v-if="settings.mode === 'type' && settings.typeTarget === 'currentLine'">
+                  <label>{{ t("showHintLine") }}</label>
+                  <select v-model="settings.showHintLine" @change="resetRound(true)">
+                    <option value="on">{{ t("on") }}</option>
+                    <option value="off">{{ t("off") }}</option>
+                  </select>
+                </div>
+
+                <div class="field" v-if="!['nextLine', 'cloze', 'type'].includes(settings.mode)">
+                  <p class="small" style="margin: 0; font-style: italic;">{{ t("noModeSettings") }}</p>
+                </div>
               </div>
             </div>
 
@@ -752,6 +790,7 @@ const showOnboarding = ref(false);
 
 // Tweak these to taste
 const GOOD_MS = 1200; // show success feedback longer
+const GOOD_WITH_DETAILS_MS = 2000; // show success feedback with explanation even longer
 
 
 /**
@@ -1016,6 +1055,9 @@ const messages: Record<Lang, Messages> = {
     onboardingTip2: "Show answer to learn from mistakes before continuing",
     onboardingTip3: "Adjust difficulty and settings to match your learning pace",
     gotIt: "Got it!",
+    
+    modeSettings: "Mode Settings",
+    noModeSettings: "No additional settings for this mode.",
   },
   // Note: The following was a duplicate Spanish block from earlier - now consolidated
   // into a single es: block below
@@ -1440,6 +1482,9 @@ const messages: Record<Lang, Messages> = {
     onboardingTip2: "Muestra la respuesta para aprender de los errores antes de continuar",
     onboardingTip3: "Ajusta la dificultad y configuración para que coincida con tu ritmo de aprendizaje",
     gotIt: "¡Entendido!",
+    
+    modeSettings: "Configuración de modo",
+    noModeSettings: "Sin configuración adicional para este modo.",
   },
 };
 
@@ -2185,8 +2230,10 @@ function resetSession() {
   setFeedback(true, t("sessionReset"));
 }
 
-function advanceAfterCorrect(delayMs = GOOD_MS) {
-  setTimeout(() => newPrompt(), delayMs);
+function advanceAfterCorrect(delayMs?: number) {
+  // Use longer delay if there are feedback details (explanation), otherwise use default
+  const actualDelay = delayMs ?? (feedback.details ? GOOD_WITH_DETAILS_MS : GOOD_MS);
+  setTimeout(() => newPrompt(), actualDelay);
 }
 
 /**
@@ -2501,7 +2548,11 @@ function submitVocabularyChoice(chosenOption: string) {
   stats.total += 1;
   if (ok) {
     stats.correct += 1;
-    setFeedback(true, t("good"));
+    // Include explanation in the feedback if it exists and is different from the translation
+    const explanation = currentWord.value.explanation;
+    const hasExplanation = explanation && explanation !== currentWord.value.translation;
+    const details = hasExplanation ? explanation : undefined;
+    setFeedback(true, t("good"), details);
     advanceVocabQuestion();
   } else {
     setFeedback(false, t("notGood"), `${t("correctLabel")}: "${correct}"`);
@@ -2511,6 +2562,8 @@ function submitVocabularyChoice(chosenOption: string) {
 
 function advanceVocabQuestion() {
   if (!currentSong.value?.vocabulary) return;
+  // Use longer delay if there are feedback details (explanation), otherwise use default
+  const delayMs = feedback.details ? GOOD_WITH_DETAILS_MS : GOOD_MS;
   setTimeout(() => {
     const n = currentSong.value!.vocabulary!.length;
     if (settings.order === "sequence") {
@@ -2520,7 +2573,7 @@ function advanceVocabQuestion() {
     }
     resetRoundUiState();
     buildVocabularyOptions();
-  }, GOOD_MS);
+  }, delayMs);
 }
 
 function buildVocabularyOptions() {
@@ -2842,7 +2895,7 @@ function buildWordCorpus(lines: string[]): string[] {
 function setFeedback(ok: boolean, message: string, details?: string) {
   feedback.ok = ok;
   feedback.message = message;
-  // feedback.details = details;
+  feedback.details = details;
 
   lastWasCorrect.value = ok;
   // show Continue only after a wrong answer
@@ -3622,6 +3675,15 @@ textarea {
 .pill.bad {
   border-color: #d66;
   background: #fff4f4;
+}
+
+.pill.pill-info {
+  border-color: #ff9800;
+  background: #fff8e1;
+  color: #e65100;
+  margin-left: 8px;
+  margin-top: 8px;
+  display: inline-block;
 }
 
 .stats {
