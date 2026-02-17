@@ -292,6 +292,7 @@ export function useTraining(currentSong: Song | null, settings: any) {
     submitTypedType,
     isBlankFilled,
     findNextUnfilledBlankIndex,
+    findBlankIndexByToken,
     selectBlankByToken,
   };
 }
