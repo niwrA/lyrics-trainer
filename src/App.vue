@@ -607,16 +607,6 @@
                 </div>
 
                 <div class="field">
-                  <label>{{ t("exercise") }}</label>
-                  <select v-model="settings.mode" @change="resetRound(true)">
-                    <option value="nextLine">{{ t("modeNextLine") }}</option>
-                    <option value="cloze">{{ t("modeCloze") }}</option>
-                    <option value="type">{{ t("modeType") }}</option>
-                    <option value="vocabulary">{{ t("modeVocabulary") }}</option>
-                  </select>
-                </div>
-
-                <div class="field">
                   <label>{{ t("order") }}</label>
                   <select v-model="settings.order" @change="resetRound(true)">
                     <option value="sequence">{{ t("orderSequence") }}</option>
@@ -642,6 +632,19 @@
                     <option value="punct">{{ t("normPunct") }}</option>
                   </select>
                 </div>
+              </div>
+            </div>
+
+            <!-- MODE SELECTOR -->
+            <div class="settings-section settings-mode-selector">
+              <h3 class="settings-section-title">{{ t("mode") }}</h3>
+              <div style="padding: 0 15px;">
+                <select v-model="settings.mode" @change="resetRound(true)" style="width: 100%;">
+                  <option value="nextLine">{{ t("modeNextLine") }}</option>
+                  <option value="cloze">{{ t("modeCloze") }}</option>
+                  <option value="type">{{ t("modeType") }}</option>
+                  <option value="vocabulary">{{ t("modeVocabulary") }}</option>
+                </select>
               </div>
             </div>
 
@@ -910,6 +913,7 @@ const messages: Record<Lang, Messages> = {
     exerciseAndOptions: "Settings",
     uiLanguage: "UI language",
     exercise: "Exercise",
+    mode: "Mode",
     modeNextLine: "Next line",
     modeCloze: "Fill blanks (cloze)",
     modeType: "Type (whole line)",
@@ -1336,6 +1340,7 @@ const messages: Record<Lang, Messages> = {
     exerciseAndOptions: "Opciones",
     uiLanguage: "Idioma de la UI",
     exercise: "Ejercicio",
+    mode: "Modo",
     modeNextLine: "Siguiente línea",
     modeCloze: "Completar huecos (cloze)",
     modeType: "Escribir (línea completa)",

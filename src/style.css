@@ -392,6 +392,13 @@ button:focus-visible {
   border-left: 4px solid #535bf2;
 }
 
+.settings-mode-selector {
+  background-color: rgba(83, 91, 242, 0.08);
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #535bf2;
+}
+
 .settings-mode {
   background-color: rgba(100, 150, 255, 0.05);
   padding: 15px;
