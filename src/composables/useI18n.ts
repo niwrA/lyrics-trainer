@@ -468,10 +468,14 @@ function formatParams(
   return out;
 }
 
-export function useI18n(uiLang: Lang) {
+export function useI18n(uiLang: Lang | (() => Lang)) {
+  const getLang = (): Lang =>
+    typeof uiLang === "function" ? uiLang() : uiLang;
+
   const t = (key: string, params?: Record<string, string | number>): string => {
+    const lang = getLang();
     return formatParams(
-      messages[uiLang]?.[key] ?? messages.en[key] ?? key,
+      messages[lang]?.[key] ?? messages.en[key] ?? key,
       params
     );
   };
