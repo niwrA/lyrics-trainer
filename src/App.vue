@@ -240,17 +240,6 @@
           <div v-if="!currentSong" class="empty">{{ t("chooseSongFirst") }}</div>
 
           <div v-else class="trainer">
-            <div class="song-header">
-              <div>
-                <div class="now-playing">{{ currentSong.title }}</div>
-                <div class="small">
-                  <span v-if="currentSong.artist">{{ currentSong.artist }}</span>
-                  <span v-if="currentSong.album"> • {{ currentSong.album }}</span>
-                  <span> • {{ t("linesCount", { n: currentSong.lines.length }) }}</span>
-                </div>
-              </div>
-            </div>
-
             <!-- MODE SELECTOR IN TRAINING -->
             <div class="training-mode-selector">
               <label>{{ t("exercise") }}</label>
@@ -296,6 +285,9 @@ import SongsTab from "./components/tabs/SongsTab.vue";
 import { useI18n } from "./composables/useI18n";
 import { useSongs } from "./composables/useSongs";
 import { useSettings } from "./composables/useSettings";
+import { sanitizeSong } from "./utils/sanitize";
+import { clamp, randomInt, shuffle, sampleUnique, cryptoRandomId } from "./utils/math";
+import { compareText, normalizeForCompare, buildWordCorpus, splitIntoLines, normalizeLines } from "./utils/text";
 import type { Lang } from "./types";
 
 /**
@@ -457,7 +449,6 @@ function seedSongs(): Song[] {
  * State
  * -----------------------------
  */
-const sourceTab = ref<"library" | "paste" | "json">("library");
 
 // Songs state — shared singleton via useSongs()
 const {
@@ -465,55 +456,11 @@ const {
   currentSetId,
   currentSongId,
   songs,
-  currentSong: _currentSong,
   getCurrentSet,
-  createNewSet: _createNewSet,
-  deleteCurrentSet: _deleteCurrentSet,
-  renameCurrentSet: _renameCurrentSet,
   loadSongs,
   persistSongs,
   watchAndPersist: watchSongs,
 } = useSongs();
-
-// Song Set management
-function createNewSet() {
-  const name = prompt(t("setName"));
-  if (!name || !name.trim()) return;
-  const newSet = _createNewSet(name);
-  if (newSet) setFeedback(true, `Set "${newSet.name}" created.`);
-}
-
-function deleteCurrentSet() {
-  const set = getCurrentSet();
-  if (!set) return;
-  if (!confirm(`Delete set "${set.name}"? This cannot be undone.`)) return;
-  _deleteCurrentSet();
-  setFeedback(true, `Set deleted.`);
-  resetRound(true);
-}
-
-function renameCurrentSet() {
-  const set = getCurrentSet();
-  if (!set) return;
-  const newName = prompt(t("setName"), set.name);
-  if (!newName || !newName.trim()) return;
-  const trimmed = newName.trim();
-  if (trimmed === set.name) return;
-  _renameCurrentSet(trimmed);
-  setFeedback(true, `Set renamed to "${trimmed}".`);
-}
-
-const songSearch = ref("");
-const songSort = reactive<{
-  key: "title" | "artist" | "createdAt" | "lines";
-  dir: "asc" | "desc";
-}>({
-  key: "title",
-  dir: "asc",
-});
-
-const pasteForm = reactive({ title: "", artist: "", album: "", text: "" });
-const jsonImportText = ref("");
 
 // Song editor state
 const editingSongId = ref<string | null>(null);
@@ -636,58 +583,6 @@ const training = computed(() => ({
 }));
 
 /**
- * ✅ Optional UX: when user selects a song, jump to Train tab.
- * Comment out if you don't want it.
- */
-function selectSong(id: string) {
-  currentSongId.value = id;
-  revealAnswer.value = false;
-  feedback.message = "";
-  feedback.details = "";
-  appTab.value = "train";
-}
-
-const sortedFilteredSongs = computed(() => {
-  const q = songSearch.value.trim().toLowerCase();
-  const filtered = songs.value.filter((s) => {
-    if (!q) return true;
-    return (
-      s.title.toLowerCase().includes(q) ||
-      (s.artist?.toLowerCase().includes(q) ?? false) ||
-      (s.album?.toLowerCase().includes(q) ?? false)
-    );
-  });
-
-  const dirMul = songSort.dir === "asc" ? 1 : -1;
-
-  return filtered.slice().sort((a, b) => {
-    let av: any;
-    let bv: any;
-    switch (songSort.key) {
-      case "title":
-        av = a.title ?? "";
-        bv = b.title ?? "";
-        break;
-      case "artist":
-        av = a.artist ?? "";
-        bv = b.artist ?? "";
-        break;
-      case "createdAt":
-        av = a.createdAt;
-        bv = b.createdAt;
-        break;
-      case "lines":
-        av = a.lines.length;
-        bv = b.lines.length;
-        break;
-    }
-    if (typeof av === "number" && typeof bv === "number")
-      return (av - bv) * dirMul;
-    return String(av).localeCompare(String(bv)) * dirMul;
-  });
-});
-
-/**
  * -----------------------------
  * Lifecycle / persistence
  * -----------------------------
@@ -751,21 +646,9 @@ watch(
 
 /**
  * -----------------------------
- * Songs actions
+ * Edit Song modal
  * -----------------------------
  */
-function deleteSongById(id: string) {
-  const set = getCurrentSet();
-  if (!set) return;
-
-  set.songs = set.songs.filter((x) => x.id !== id);
-
-  if (currentSongId.value === id) {
-    currentSongId.value = set.songs.length ? set.songs[0].id : null;
-  }
-  resetRound(true);
-}
-
 function startEditSong(id: string) {
   const song = songs.value.find((s) => s.id === id);
   if (!song) return;
@@ -884,101 +767,6 @@ function removeVocabularyItem(idx: number) {
   if (idx >= 0 && idx < visualEditData.vocabulary.length) {
     visualEditData.vocabulary.splice(idx, 1);
   }
-}
-
-function clearPasteForm() {
-  pasteForm.title = "";
-  pasteForm.artist = "";
-  pasteForm.album = "";
-  pasteForm.text = "";
-}
-
-function addSongFromPaste() {
-  const title = pasteForm.title.trim();
-  const text = pasteForm.text.trim();
-
-  if (!title) return setFeedback(false, t("provideTitle"));
-  if (!text) return setFeedback(false, t("pasteLyricsFirst"));
-
-  const lines = normalizeLines(splitIntoLines(text));
-  if (lines.length < 2) return setFeedback(false, t("tooFewLines"));
-
-  const set = getCurrentSet();
-  if (!set) return setFeedback(false, t("noSetSelected"));
-
-  const s: Song = {
-    id: cryptoRandomId(),
-    title,
-    artist: pasteForm.artist.trim() || undefined,
-    album: pasteForm.album.trim() || undefined,
-    createdAt: new Date().toISOString(),
-    lines,
-  };
-
-  set.songs.unshift(s);
-  currentSongId.value = s.id;
-  sourceTab.value = "library";
-
-  pasteForm.title = "";
-  pasteForm.artist = "";
-  pasteForm.album = "";
-  pasteForm.text = "";
-
-  setFeedback(true, t("songAdded"));
-  resetRound(true);
-  appTab.value = "train";
-}
-
-function handleFileImport(event: Event) {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const content = e.target?.result as string;
-      jsonImportText.value = content;
-      setFeedback(true, t("fileLoaded", { name: file.name }));
-    } catch (err) {
-      setFeedback(false, t("fileReadError"));
-    }
-  };
-  reader.onerror = () => {
-    setFeedback(false, t("fileReadError"));
-  };
-  reader.readAsText(file);
-
-  // Reset input so same file can be selected again
-  input.value = "";
-}
-
-function importSongsJson() {
-  const raw = jsonImportText.value.trim();
-  if (!raw) return setFeedback(false, t("jsonPasteFirst"));
-  try {
-    const { importSongsJson: doImport } = useSongs();
-    const count = doImport(raw);
-    if (count === 0) return setFeedback(false, t("noValidSongs"));
-    setFeedback(true, t("importedSongs", { n: count }));
-    jsonImportText.value = "";
-    sourceTab.value = "library";
-    resetRound(true);
-  } catch (e: any) {
-    setFeedback(false, t("jsonParseError"), String(e?.message ?? e));
-  }
-}
-
-function exportSongsJson() {
-  // Export all sets
-  const payload = JSON.stringify({
-    songSets: songSets.value,
-  }, null, 2);
-  // BOM helps some programs detect UTF-8 correctly
-  const withBom = "\uFEFF" + payload;
-  downloadText(withBom, "song-sets.json", "application/json;charset=utf-8");
-  // todo: this feedback is on another component, so do something once we make an export tab
-  // setFeedback(true, t("jsonExportStarted"));
 }
 
 /**
@@ -1615,66 +1403,6 @@ function pickWeightedIndices(wordIndices: number[], k: number): Set<number> {
 
 /**
  * -----------------------------
- * Text compare / normalization
- * -----------------------------
- */
-function compareText(a: string, b: string, mode: Normalize): boolean {
-  return normalizeForCompare(a, mode) === normalizeForCompare(b, mode);
-}
-
-function normalizeForCompare(s: string, mode: Normalize): string {
-  const x = s ?? "";
-  let result = "";
-  if (mode === "strict") {
-    result = x.trim();
-  } else if (mode === "basic") {
-    result = x.trim().toLowerCase().replace(/\s+/g, " ");
-  } else {
-    result = x
-      .trim()
-      .toLowerCase()
-      .replace(/[\p{P}\p{S}]+/gu, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-  return result;
-}
-
-/**
- * -----------------------------
- * Line splitting / corpus
- * -----------------------------
- */
-function splitIntoLines(text: string): string[] {
-  return text
-    .replace(/\r\n/g, "\n")
-    .split("\n")
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0);
-}
-
-function normalizeLines(lines: string[]): string[] {
-  const out: string[] = [];
-  for (const l of lines) {
-    if (out.length === 0 || out[out.length - 1] !== l) out.push(l);
-  }
-  return out;
-}
-
-function buildWordCorpus(lines: string[]): string[] {
-  const set = new Set<string>();
-  for (const line of lines) {
-    const words = line.match(/[\p{L}\p{N}’'\-]+/gu) ?? [];
-    for (const w of words) {
-      const ww = w.trim();
-      if (ww.length >= 2) set.add(ww);
-    }
-  }
-  return Array.from(set);
-}
-
-/**
- * -----------------------------
  * Feedback
  * -----------------------------
  */
@@ -1703,150 +1431,6 @@ function tryAgainSamePrompt() {
   feedback.message = "";
   feedback.details = "";
 }
-
-/**
- * -----------------------------
- * Sanitization for JSON import
- * -----------------------------
- */
-function validateSongSet(x: any): SongSet | null {
-  if (!x || typeof x !== "object") return null;
-  const id = String(x.id ?? cryptoRandomId());
-  const name = String(x.name ?? "").trim();
-  const createdAt = x.createdAt ? String(x.createdAt) : new Date().toISOString();
-
-  const songs = Array.isArray(x.songs)
-    ? x.songs
-      .map((s: any) => sanitizeSong(s))
-      .filter((s): s is Song => !!s && s.lines.length >= 2 && !!s.title)
-    : [];
-
-  if (!name || !songs.length) return null;
-
-  return {
-    id,
-    name,
-    createdAt,
-    songs,
-  };
-}
-
-function sanitizeSong(x: any): Song | null {
-  if (!x) return null;
-  const title = String(x.title ?? "").trim();
-  const lines = Array.isArray(x.lines)
-    ? x.lines.map((l: any) => String(l).trim()).filter((l: string) => l)
-    : [];
-  if (!title || lines.length < 2) return null;
-  return {
-    id: String(x.id ?? cryptoRandomId()),
-    title,
-    artist: x.artist ? String(x.artist) : undefined,
-    album: x.album ? String(x.album) : undefined,
-    createdAt: x.createdAt ? String(x.createdAt) : new Date().toISOString(),
-    lines: normalizeLines(lines),
-    vocabulary: sanitizeVocabulary(x.vocabulary),
-  };
-}
-
-function sanitizeVocabulary(vocab: any): Word[] | undefined {
-  if (!Array.isArray(vocab)) return undefined;
-  const sanitized: Word[] = [];
-  for (const v of vocab) {
-    if (!v || typeof v !== "object") continue;
-    const word = String(v.word ?? "").trim();
-    if (!word) continue;
-    sanitized.push({
-      word,
-      translation: v.translation ? String(v.translation).trim() : undefined,
-      explanation: v.explanation ? String(v.explanation).trim() : undefined,
-    });
-  }
-  return sanitized.length > 0 ? sanitized : undefined;
-}
-
-/**
- * -----------------------------
- * Utility
- * -----------------------------
- */
-function clamp(n: number, lo: number, hi: number): number {
-  if (Number.isNaN(n)) return lo;
-  return Math.max(lo, Math.min(hi, n));
-}
-function randomInt(lo: number, hiInclusive: number): number {
-  return Math.floor(Math.random() * (hiInclusive - lo + 1)) + lo;
-}
-function shuffle<T>(arr: T[]): T[] {
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-function sampleUnique<T>(items: T[], k: number, keyFn: (x: T) => string): T[] {
-  const out: T[] = [];
-  const seen = new Set<string>();
-  for (const it of shuffle(items)) {
-    const key = keyFn(it);
-    if (seen.has(key)) continue;
-    out.push(it);
-    seen.add(key);
-    if (out.length >= k) break;
-  }
-  return out;
-}
-function cryptoRandomId(): string {
-  const a = new Uint32Array(4);
-  crypto.getRandomValues(a);
-  return Array.from(a)
-    .map((x) => x.toString(16).padStart(8, "0"))
-    .join("");
-}
-function downloadText(text: string, filename: string, mime: string) {
-  const blob = new Blob([text], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-/**
- * -----------------------------
- * JSON schema example
- * -----------------------------
- */
-const jsonSchemaExample = `[
-  {
-    "id": "optional-string-id",
-    "title": "Song title",
-    "artist": "Optional artist",
-    "album": "Optional album",
-    "createdAt": "2026-02-08T12:00:00.000Z",
-    "lines": [
-      "First line",
-      "Second line",
-      "..."
-    ],
-    "vocabulary": [
-      {
-        "word": "palabra",
-        "translation": "word",
-        "explanation": "A unit of language"
-      },
-      {
-        "word": "canción",
-        "translation": "song",
-        "explanation": "A piece of music with lyrics"
-      }
-    ]
-  }
-]`;
 
 /**
  * Keep cloze choices in sync when switching active blank
