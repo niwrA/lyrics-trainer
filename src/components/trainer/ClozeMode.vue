@@ -132,32 +132,8 @@ function submitTypedCloze(): void {
 function submitClozeChoice(word: string): void {
   if (props.training.roundLocked) return;
 
-  const activeBlank = props.training.clozeBlanks[props.training.activeBlankIndex];
-  if (!activeBlank) return;
-
-  const isCorrect = normalizeForCompare(word, props.settings.normalize) ===
-                    normalizeForCompare(activeBlank.correct, props.settings.normalize);
-
-  props.training.stats.total += 1;
-  if (isCorrect) {
-    props.training.stats.correct += 1;
-    props.training.setFeedback(true, "Correct!");
-    activeBlank.filled = word;
-
-    // Check if all blanks are filled
-    const nextBlank = props.training.clozeBlanks.find((b: any) => !b.filled);
-    if (!nextBlank) {
-      props.training.advanceAfterCorrect();
-    } else {
-      // Move to next blank
-      const nextIdx = props.training.clozeBlanks.indexOf(nextBlank);
-      if (nextIdx !== -1) {
-        props.training.activeBlankIndex = nextIdx;
-      }
-    }
-  } else {
-    props.training.setFeedback(false, "Incorrect.", `Expected: "${activeBlank.correct}"`);
-  }
+  // Delegate to the training method which handles all progression logic
+  props.training.submitClozeChoice(word);
 }
 </script>
 
@@ -260,26 +236,31 @@ function submitClozeChoice(word: string): void {
   cursor: pointer;
   transition: all 0.2s;
   font-size: 14px;
+  color: #333;
 }
 
 .choice:hover:not(:disabled) {
   border-color: #1976d2;
   background: #f5f5f5;
+  color: #333;
 }
 
 .choice:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  color: #333;
 }
 
 .choice.correct {
   border-color: #4caf50;
   background: #e8f5e9;
+  color: #333;
 }
 
 .choice.incorrect {
   border-color: #f44336;
   background: #ffebee;
+  color: #333;
 }
 
 .row {

@@ -67,7 +67,7 @@ function choiceClassVocab(option: string): Record<string, boolean> {
 
   // After feedback is shown
   const isCorrect = 
-    option.toLowerCase().trim() === (currentWord.value.translation || currentWord.value.explanation)?.toLowerCase().trim();
+    option === (currentWord.value.translation || currentWord.value.explanation);
 
   return {
     correct: isCorrect && props.training.feedback.ok,
@@ -79,19 +79,8 @@ function choiceClassVocab(option: string): Record<string, boolean> {
 function submitVocabularyChoice(option: string): void {
   if (props.training.roundLocked || !currentWord.value) return;
 
-  const expected = currentWord.value.translation || currentWord.value.explanation || "";
-  const isCorrect = normalizeForCompare(option, props.settings.normalize) ===
-                   normalizeForCompare(expected, props.settings.normalize);
-
-  props.training.stats.total += 1;
-  if (isCorrect) {
-    props.training.stats.correct += 1;
-    props.training.setFeedback(true, "Correct!");
-    props.training.advanceAfterCorrect();
-  } else {
-    props.training.roundLocked = true;
-    props.training.setFeedback(false, "Incorrect.", `Correct: "${expected}"`);
-  }
+  // Call the training method which handles feedback and advancement
+  props.training.submitVocabularyChoice(option);
 }
 </script>
 
@@ -157,29 +146,35 @@ function submitVocabularyChoice(option: string): void {
   cursor: pointer;
   transition: all 0.2s;
   font-size: 14px;
+  color: #333;
 }
 
 .choice:hover:not(:disabled) {
   border-color: #1976d2;
   background: #f5f5f5;
+  color: #333;
 }
 
 .choice:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  color: #333;
 }
 
 .choice.correct {
   border-color: #4caf50;
   background: #e8f5e9;
+  color: #333;
 }
 
 .choice.incorrect {
   border-color: #f44336;
   background: #ffebee;
+  color: #333;
 }
 
 .vocab-option-text {
   font-size: 14px;
+  color: #333;
 }
 </style>

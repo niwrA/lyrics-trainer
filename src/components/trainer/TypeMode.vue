@@ -16,12 +16,12 @@
         v-model="typedInput"
         :disabled="training.roundLocked"
         :placeholder="t('typeHere')"
-        @keydown.enter.prevent="training.submitTypedType()"
+        @keydown.enter.prevent="training.submitTypedLine()"
       />
       <button
         class="btn primary"
         :disabled="training.roundLocked"
-        @click="training.submitTypedType()"
+        @click="training.submitTypedLine()"
       >
         {{ t("check") }}
       </button>

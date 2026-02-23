@@ -203,7 +203,9 @@ export function useTraining(currentSong: Song | null, settings: any) {
     } else {
       revealAnswer.value = true;
       roundLocked.value = true;
-      setFeedback(false, "Incorrect.", `Expected: "${target}"`);
+      const typed = typedInput.value || "(empty)";
+      const detailsMsg = `You typed: "${typed}"\nExpected: "${target}"`;
+      setFeedback(false, "Incorrect.", detailsMsg);
     }
   }
 

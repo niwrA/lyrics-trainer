@@ -421,165 +421,11 @@
               </select>
             </div>
 
-            <div v-if="settings.mode !== 'vocabulary'" class="prompt">
-              <div class="label">{{ t("prompt") }}</div>
-              <div class="line">{{ promptLine }}</div>
-            </div>
-
-            <div v-if="settings.mode !== 'vocabulary' && revealAnswer" class="answer">
-              <div class="label">{{ t("answer") }}</div>
-              <div class="line">{{ answerLine }}</div>
-            </div>
-
-            <!-- MODE: nextLine -->
-            <div v-if="settings.mode === 'nextLine'">
-              <h3>{{ t("chooseNextLine") }}</h3>
-
-              <div v-if="settings.nextLineInput === 'choice'" class="choices">
-                <button v-for="c in mcqChoices" :key="c.key" class="choice" :class="choiceClassText(c.text)"
-                  :disabled="roundLocked" @click="submitChoice(c.text)">
-                  {{ c.text }}
-                </button>
-              </div>
-
-              <div v-else>
-                <div class="row">
-                  <input v-model="typedInput" :disabled="roundLocked" :placeholder="t('typeHere')"
-                    @keydown.enter.prevent="submitTypedNextLine()" />
-                  <button class="btn primary" :disabled="roundLocked" @click="submitTypedNextLine()">
-                    {{ t("check") }}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- MODE: cloze -->
-            <div v-else-if="settings.mode === 'cloze'">
-              <h3>{{ t("fillMissingWords") }}</h3>
-
-              <div class="cloze-line">
-                <span v-for="(tkn, i) in clozeTokens" :key="i">
-                  <template v-if="tkn.type === 'text'">{{ tkn.value }}</template>
-                  <template v-else>
-                    <button class="blank-btn" :class="{
-                      active: findBlankIndexByToken(tkn) === activeBlankIndex && settings.clozeInput === 'choice',
-                      filled: !!tkn.filled
-                    }" :disabled="roundLocked || !!tkn.filled" @click="selectBlankByToken(tkn)">
-                      {{ tkn.filled ?? "____" }}
-                    </button>
-                  </template>
-                </span>
-              </div>
-
-              <div v-if="settings.clozeInput === 'choice'">
-                <div class="small">{{ t("clozeChoiceHint") }}</div>
-
-                <div class="row" v-if="settings.showClozeTarget === 'on'">
-                  <div class="field" style="flex: 1">
-                    <label>{{ t("targetWordHelper") }}</label>
-                    <input :value="clozeBlanks[activeBlankIndex]?.correct ?? ''" disabled />
-                  </div>
-                </div>
-
-                <div class="choices">
-                  <button v-for="w in clozeChoices" :key="w" class="choice" :class="choiceClassWord(w)"
-                    :disabled="roundLocked || isBlankFilled(activeBlankIndex)" @click="submitClozeChoice(w)">
-                    {{ w }}
-                  </button>
-                </div>
-              </div>
-
-              <div v-else>
-                <div class="small">{{ t("clozeTypeHint") }}</div>
-                <div class="row">
-                  <input v-model="typedInput" :disabled="roundLocked" :placeholder="t('typeHere')"
-                    @keydown.enter.prevent="submitTypedCloze()" />
-                  <button class="btn primary" :disabled="roundLocked" @click="submitTypedCloze()">
-                    {{ t("check") }}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- MODE: type -->
-            <div v-else-if="settings.mode === 'type'">
-              <h3>{{ t("modeType") }}</h3>
-
-              <div v-if="settings.typeTarget === 'currentLine' && settings.showHintLine === 'on'" class="small">
-                {{ t("typeHintLine") }}
-              </div>
-
-              <div class="row">
-                <input v-model="typedInput" :disabled="roundLocked" :placeholder="t('typeHere')"
-                  @keydown.enter.prevent="submitTypedLine()" />
-                <button class="btn primary" :disabled="roundLocked" @click="submitTypedLine()">
-                  {{ t("check") }}
-                </button>
-              </div>
-            </div>
-
-            <!-- MODE: vocabulary -->
-            <div v-else-if="settings.mode === 'vocabulary'">
-              <h3>{{ t("modeVocabulary") }}</h3>
-
-              <div v-if="!currentWord" class="empty">
-                {{ t("noVocabulary") }}
-              </div>
-
-              <div v-else>
-                <div class="vocabulary-word">
-                  <div class="label">{{ t("vocabularyWord") }}</div>
-                  <div class="word-display">{{ currentWord.word }}</div>
-                </div>
-
-                <div class="vocabulary-choices">
-                  <div class="small">{{ t("vocabularyHint") }}</div>
-                  <button v-for="(option, idx) in vocabChoices" :key="idx" class="choice" :disabled="roundLocked"
-                    @click="submitVocabularyChoice(option)">
-                    <div class="vocab-option-text">{{ option }}</div>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="row">
-                <!-- ✅ only after wrong answer -->
-                <button v-if="showContinue" class="btn" @click="continueAfterWrong()">
-                  {{ t("continue") }}
-                </button>
-
-                <!-- optional -->
-                <button v-if="showContinue" class="btn primary" @click="tryAgainSamePrompt()">
-                  {{ t("tryAgain") }}
-                </button>
-              </div>
-
-            </div>
-
-            <div class="feedback" v-if="feedback.message">
-              <div :class="['pill', feedback.ok ? 'ok' : 'bad']">{{ feedback.message }}</div>
-              <div class="pill pill-info" v-if="feedback.details">{{ feedback.details }}</div>
-            </div>
-
-            <div class="stats">
-              <div class="stat">
-                <div class="label">{{ t("statsScore") }}</div>
-                <div class="value">{{ t("scoreLineShort", { ok: stats.correct, total: stats.total }) }}</div>
-              </div>
-
-              <div class="stat" v-if="settings.mode === 'cloze'">
-                <div class="label">{{ t("statsClozeDifficulty") }}</div>
-                <div class="value">{{ t("missingWords", { n: clozeMissingCount }) }}</div>
-              </div>
-
-              <div class="stat" v-if="settings.mode !== 'vocabulary'">
-                <div class="label">{{ t("statsLineIndex") }}</div>
-                <div class="value">
-                  {{ t("indexOf", { i: currentIndex + 1, n: currentSong.lines.length }) }}
-                </div>
-              </div>
-            </div>
+            <TrainerShell 
+              :current-song="currentSong" 
+              :settings="settings" 
+              :training="training" 
+            />
           </div>
         </div>
       </section>
@@ -743,6 +589,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch, Ref } from "vue";
+import TrainerShell from "./components/trainer/TrainerShell.vue";
 
 /**
  * -----------------------------
@@ -982,6 +829,7 @@ const messages: Record<Lang, Messages> = {
 
     good: "Correct!",
     notGood: "Incorrect.",
+    youTypedLabel: "You typed",
     correctLabel: "Correct",
     expectedLabel: "Expected",
 
@@ -1197,6 +1045,7 @@ const messages: Record<Lang, Messages> = {
 
     good: "¡Correcto!",
     notGood: "Incorrecto.",
+    youTypedLabel: "Escribiste",
     correctLabel: "Correcto",
     expectedLabel: "Esperado",
 
@@ -1534,6 +1383,50 @@ const currentWord = computed(() => {
 const currentSong = computed(
   () => songs.value.find((s) => s.id === currentSongId.value) ?? null
 );
+
+// ✅ NEW: Unified training ref for TrainerShell
+const training = computed(() => ({
+  stats,
+  revealAnswer: revealAnswer.value,
+  roundLocked: roundLocked.value,
+  feedback,
+  currentIndex: currentIndex.value,
+  promptLine: promptLine.value,
+  answerLine: answerLine.value,
+  mcqChoices: mcqChoices.value,
+  clozeTokens: clozeTokens.value,
+  clozeBlanks: clozeBlanks.value,
+  activeBlankIndex: activeBlankIndex.value,
+  clozeChoices: clozeChoices.value,
+  clozeMissingCount: clozeMissingCount.value,
+  clozeConsecutiveCorrect: clozeConsecutiveCorrect.value,
+  clozeConsecutiveIncorrect: clozeConsecutiveIncorrect.value,
+  get typedInput() {
+    return typedInput.value;
+  },
+  set typedInput(val: string) {
+    typedInput.value = val;
+  },
+  vocabIndex: vocabIndex.value,
+  vocabChoices: vocabChoices.value,
+  currentWord: currentWord.value,
+  showContinue: showContinue.value,
+  // Methods
+  submitChoice,
+  submitTypedNextLine,
+  submitClozeChoice,
+  submitTypedCloze,
+  submitVocabularyChoice,
+  setFeedback,
+  advanceAfterCorrect,
+  advanceVocabQuestion,
+  findBlankIndexByToken,
+  selectBlankByToken,
+  isBlankFilled,
+  submitTypedLine,
+  setActiveBlankIndex,
+  tryAgainSamePrompt,
+}));
 
 /**
  * ✅ Optional UX: when user selects a song, jump to Train tab.
@@ -2221,7 +2114,9 @@ function submitTypedLine() {
   } else {
     revealAnswer.value = true;
     roundLocked.value = true;
-    setFeedback(false, t("notGood"), `${t("expectedLabel")}: "${target}"`);
+    const typed = typedInput.value || "(empty)";
+    const detailsMsg = `${t("youTypedLabel")}: "${typed}"\n${t("expectedLabel")}: "${target}"`;
+    setFeedback(false, t("notGood"), detailsMsg);
   }
 }
 
@@ -2265,10 +2160,10 @@ function submitClozeChoice(word: string) {
     } else {
       activeBlankIndex.value = nextIdx;
       lastClozePick.value = null; // ✅ reset for next blank
-      clozeChoices.value = buildClozeChoices(
-        clozeBlanks.value[nextIdx].correct,
-        settings.optionCount
-      );
+      // Clear feedback and choices so next blank appears fresh
+      feedback.message = "";
+      feedback.details = "";
+      clozeChoices.value = [];
     }
   } else {
     setFeedback(
@@ -2468,6 +2363,16 @@ function selectBlankByToken(token: ClozeToken): void {
   }
 }
 
+function setActiveBlankIndex(idx: number): void {
+  if (idx >= 0 && idx < clozeBlanks.value.length) {
+    activeBlankIndex.value = idx;
+    const blank = clozeBlanks.value[idx];
+    if (blank && settings.clozeInput === "choice") {
+      clozeChoices.value = buildClozeChoices(blank.correct, settings.optionCount);
+    }
+  }
+}
+
 /**
  * -----------------------------
  * Build MCQ choices (duplicate-safe)
@@ -2636,14 +2541,20 @@ function compareText(a: string, b: string, mode: Normalize): boolean {
 
 function normalizeForCompare(s: string, mode: Normalize): string {
   const x = s ?? "";
-  if (mode === "strict") return x.trim();
-  if (mode === "basic") return x.trim().toLowerCase().replace(/\s+/g, " ");
-  return x
-    .trim()
-    .toLowerCase()
-    .replace(/[\p{P}\p{S}]+/gu, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  let result = "";
+  if (mode === "strict") {
+    result = x.trim();
+  } else if (mode === "basic") {
+    result = x.trim().toLowerCase().replace(/\s+/g, " ");
+  } else {
+    result = x
+      .trim()
+      .toLowerCase()
+      .replace(/[\p{P}\p{S}]+/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+  return result;
 }
 
 /**

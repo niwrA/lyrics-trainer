@@ -137,6 +137,7 @@ const messages: Record<Lang, Messages> = {
 
     good: "Correct!",
     notGood: "Incorrect.",
+    youTypedLabel: "You typed",
     correctLabel: "Correct",
     expectedLabel: "Expected",
 
@@ -362,6 +363,7 @@ const messages: Record<Lang, Messages> = {
 
     good: "¡Correcto!",
     notGood: "Incorrecto.",
+    youTypedLabel: "Escribiste",
     correctLabel: "Correcto",
     expectedLabel: "Esperado",
 

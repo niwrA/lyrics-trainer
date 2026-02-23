@@ -76,7 +76,7 @@
       <div :class="['pill', training.feedback.ok ? 'ok' : 'bad']">
         {{ training.feedback.message }}
       </div>
-      <div v-if="training.feedback.details" class="pill pill-info">
+      <div v-if="training.feedback.details" class="pill pill-info" style="white-space: pre-wrap;">
         {{ training.feedback.details }}
       </div>
     </div>
