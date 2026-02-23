@@ -70,7 +70,7 @@
         <div class="song-list">
           <div v-for="s in sortedFilteredSongs" :key="s.id" class="song-row"
             :class="{ selected: currentSong?.id === s.id }">
-            <button class="song-main" @click="selectSong(s.id)">
+            <button class="song-main" @click="handleSelectSong(s.id)">
               <div class="song-title">{{ s.title }}</div>
               <div class="song-meta">
                 <span v-if="s.artist">{{ s.artist }}</span>
@@ -160,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useSongs } from "../../composables/useSongs";
 import { useI18n } from "../../composables/useI18n";
 import { useSettings } from "../../composables/useSettings";
@@ -169,17 +169,13 @@ import type { Song } from "../../types";
 // Props & Emits
 const emit = defineEmits<{
   editSong: [songId: string];
+  navigate: [tab: string];
 }>();
 
 // Composables
-const { t } = useI18n("en");
-const songs = useSongs();
 const { settings } = useSettings();
-
-// Load data on mount
-onMounted(() => {
-  songs.loadSongs();
-});
+const { t } = useI18n(() => settings.uiLang as "en" | "es");
+const songs = useSongs();
 
 // Computed
 const {
@@ -285,11 +281,17 @@ function handleDeleteSet() {
 
 function handlePasteSong() {
   if (!pasteForm.title) {
-    alert(t("title") + " is required");
+    alert(t("provideTitle"));
+    return;
+  }
+  if (!pasteForm.text.trim()) {
+    alert(t("pasteLyricsFirst"));
     return;
   }
   addSongFromPaste(pasteForm.title, pasteForm.artist, pasteForm.album, pasteForm.text);
   clearPasteForm();
+  sourceTab.value = "library";
+  emit("navigate", "train");
 }
 
 function clearPasteForm() {
@@ -314,279 +316,27 @@ function handleFileImport(event: Event) {
 
 function handleJsonImport() {
   if (!jsonImportText.value.trim()) {
-    alert(t("import") + " data is required");
+    alert(t("jsonPasteFirst"));
     return;
   }
   try {
     const count = importSongsJson(jsonImportText.value);
-    alert(t("import") + `: ${count} songs imported`);
+    alert(t("importedSongs", { n: count }));
     jsonImportText.value = "";
+    sourceTab.value = "library";
   } catch (error) {
-    alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    alert(t("jsonParseError") + `: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 }
 
 function emitEditSong(songId: string) {
   emit("editSong", songId);
 }
+
+function handleSelectSong(id: string) {
+  selectSong(id);
+  emit("navigate", "train");
+}
 </script>
 
-<style scoped>
-.card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-}
 
-.card-body {
-  padding: 20px;
-}
-
-.tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.tab {
-  padding: 10px 15px;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  font-size: 14px;
-  color: #666;
-  transition: all 0.2s;
-}
-
-.tab:hover {
-  color: #333;
-}
-
-.tab.active {
-  color: #1976d2;
-  border-bottom-color: #1976d2;
-}
-
-.panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.row-grow {
-  flex: 1;
-}
-
-.row > label {
-  min-width: 100px;
-  font-weight: 500;
-}
-
-.row > input,
-.row > select {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.row > input:focus,
-.row > select:focus {
-  outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
-}
-
-textarea {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 13px;
-  resize: vertical;
-}
-
-textarea:focus {
-  outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
-}
-
-.search-input {
-  flex: 1;
-}
-
-.sort-controls {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.sort-label {
-  font-weight: 500;
-  font-size: 13px;
-  white-space: nowrap;
-}
-
-.sort-select,
-.sort-select-dir {
-  padding: 6px 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 13px;
-}
-
-.song-list {
-  max-height: 600px;
-  overflow-y: auto;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  margin: 15px 0;
-}
-
-.song-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 12px;
-  border-bottom: 1px solid #f0f0f0;
-  background: white;
-  transition: background 0.2s;
-}
-
-.song-row:hover {
-  background: #f9f9f9;
-}
-
-.song-row.selected {
-  background: #e3f2fd;
-  border-left: 3px solid #1976d2;
-  padding-left: 9px;
-}
-
-.song-main {
-  flex: 1;
-  background: none;
-  border: none;
-  padding: 0;
-  text-align: left;
-  cursor: pointer;
-}
-
-.song-title {
-  font-weight: 500;
-  color: #333;
-}
-
-.song-meta {
-  font-size: 12px;
-  color: #999;
-  margin-top: 4px;
-}
-
-.icon-btn {
-  width: 36px;
-  height: 36px;
-  padding: 6px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.icon-btn:hover {
-  border-color: #1976d2;
-  background: #f5f5f5;
-}
-
-.icon-btn.primary {
-  border-color: #1976d2;
-  color: #1976d2;
-}
-
-.icon-btn.primary:hover {
-  background: #e3f2fd;
-}
-
-.icon-btn.danger {
-  border-color: #d32f2f;
-  color: #d32f2f;
-}
-
-.icon-btn.danger:hover {
-  background: #ffebee;
-}
-
-.btn {
-  padding: 10px 16px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.btn:hover {
-  background: #f5f5f5;
-  border-color: #999;
-}
-
-.btn.primary {
-  background: #1976d2;
-  color: white;
-  border-color: #1976d2;
-}
-
-.btn.primary:hover {
-  background: #1565c0;
-}
-
-.sticky-actions {
-  position: sticky;
-  bottom: 0;
-  background: white;
-  padding: 12px 0;
-  margin: 0 -20px;
-  padding: 12px 20px;
-  border-top: 1px solid #e0e0e0;
-}
-
-.small {
-  font-size: 12px;
-  color: #999;
-  margin-top: 8px;
-}
-
-.code {
-  background: #f5f5f5;
-  padding: 10px;
-  border-radius: 4px;
-  overflow-x: auto;
-  font-size: 11px;
-  line-height: 1.4;
-}
-
-details {
-  margin-top: 10px;
-}
-
-summary {
-  cursor: pointer;
-  font-weight: 500;
-  color: #1976d2;
-}
-</style>

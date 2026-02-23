@@ -1,6 +1,7 @@
 /**
  * useSettings - Settings management composable
  * Handles exercise settings persistence and reactive updates
+ * Module-level singleton state shared across all callers.
  */
 
 import { reactive, watch } from "vue";
@@ -23,11 +24,11 @@ const defaultSettings: Settings = {
   showHintLine: "on",
 };
 
-export function useSettings() {
-  // Create reactive settings object
-  const settings = reactive<Settings>({ ...defaultSettings });
+// --- Singleton state (shared across all useSettings() calls) ---
+const settings = reactive<Settings>({ ...defaultSettings });
+// ---------------------------------------------------------------
 
-  // Load settings from localStorage
+export function useSettings() {
   function loadSettings(): void {
     const raw = localStorage.getItem(LS_SETTINGS);
     if (!raw) return;
@@ -39,18 +40,15 @@ export function useSettings() {
     }
   }
 
-  // Save settings to localStorage
   function persistSettings(): void {
     localStorage.setItem(LS_SETTINGS, JSON.stringify(settings));
   }
 
-  // Reset to defaults
   function resetToDefaults(): void {
     Object.assign(settings, defaultSettings);
     persistSettings();
   }
 
-  // Update a single setting
   function updateSetting<K extends keyof Settings>(
     key: K,
     value: Settings[K]
@@ -58,15 +56,16 @@ export function useSettings() {
     settings[key] = value;
   }
 
-  // Update multiple settings at once
   function updateSettings(updates: Partial<Settings>): void {
     Object.assign(settings, updates);
   }
 
-  // Watch for changes and persist
-  watch(settings, () => persistSettings(), { deep: true });
+  // Watch must be called inside a component setup (not at module level)
+  // so it runs within an active Vue app instance.
+  function watchAndPersist(): void {
+    watch(settings, () => persistSettings(), { deep: true });
+  }
 
-  // Return public API
   return {
     settings,
     loadSettings,
@@ -74,5 +73,6 @@ export function useSettings() {
     resetToDefaults,
     updateSetting,
     updateSettings,
+    watchAndPersist,
   };
 }

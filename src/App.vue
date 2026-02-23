@@ -92,166 +92,7 @@
 
     <main class="main" role="tabpanel">
       <!-- TAB: Songs -->
-      <section v-if="appTab === 'songs'" class="card">
-        <!-- <div class="card-head">
-          <div class="card-title">{{ t("sourceAndSongs") }}</div>
-        </div> -->
-
-        <div class="card-body">
-          <div class="tabs">
-            <button class="tab" :class="{ active: sourceTab === 'library' }" @click="sourceTab = 'library'">
-              {{ t("tabLibrary") }}
-            </button>
-            <button class="tab" :class="{ active: sourceTab === 'paste' }" @click="sourceTab = 'paste'">
-              {{ t("tabPaste") }}
-            </button>
-            <button class="tab" :class="{ active: sourceTab === 'json' }" @click="sourceTab = 'json'">
-              {{ t("tabJsonImport") }}
-            </button>
-            <!-- todo: give tab with explanation of what export does etc. -->
-            <button class="tab" @click="exportSongsJson()">{{ t("exportSongsJson") }}</button>
-          </div>
-
-          <div v-if="sourceTab === 'library'" class="panel">
-            <div class="row">
-              <label>{{ t("songSets") }}</label>
-              <div class="row-grow">
-                <select v-model="currentSetId">
-                  <option v-for="set in songSets" :key="set.id" :value="set.id">
-                    {{ set.name }} ({{ set.songs.length }})
-                  </option>
-                </select>
-              </div>
-              <button class="icon-btn primary" @click="createNewSet()" :title="t('newSet')" :aria-label="t('newSet')">
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
-                </svg>
-              </button>
-              <button class="icon-btn primary" @click="renameCurrentSet()" :title="t('renameSet')"
-                :aria-label="t('renameSet')">
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="currentColor" />
-                  <path
-                    d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
-                    fill="currentColor" />
-                </svg>
-              </button>
-              <button class="icon-btn danger" @click="deleteCurrentSet()" :title="t('deleteSet')"
-                :aria-label="t('deleteSet')">
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                  <path
-                    d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 7h2v9h-2v-9zm4 0h2v9h-2v-9zM7 10h2v9H7v-9zm1-1h10l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 9h2z"
-                    fill="#d32f2f" />
-                </svg>
-              </button>
-            </div>
-
-            <div class="row">
-              <label>{{ t("search") }}</label>
-              <input v-model="songSearch" :placeholder="t('searchPlaceholder')" class="search-input" />
-              <div class="sort-controls">
-                <label class="sort-label">{{ t("sortBy") }}</label>
-                <select v-model="songSort.key" class="sort-select">
-                  <option value="title">{{ t("sortTitle") }}</option>
-                  <option value="artist">{{ t("sortArtist") }}</option>
-                  <option value="createdAt">{{ t("sortCreatedAt") }}</option>
-                  <option value="lines">{{ t("sortLines") }}</option>
-                </select>
-                <select v-model="songSort.dir" class="sort-select-dir">
-                  <option value="asc">{{ t("sortAsc") }}</option>
-                  <option value="desc">{{ t("sortDesc") }}</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="song-list">
-              <div v-for="s in sortedFilteredSongs" :key="s.id" class="song-row"
-                :class="{ selected: currentSong?.id === s.id }">
-                <button class="song-main" @click="selectSong(s.id)">
-                  <div class="song-title">{{ s.title }}</div>
-                  <div class="song-meta">
-                    <span v-if="s.artist">{{ s.artist }}</span>
-                    <span v-if="s.album">• {{ s.album }}</span>
-                    <span>• {{ t("linesCount", { n: s.lines.length }) }}</span>
-                  </div>
-                </button>
-
-                <button class="icon-btn primary" type="button" :aria-label="t('edit')" :title="t('edit')"
-                  @click.stop="startEditSong(s.id)">
-                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="currentColor" />
-                    <path
-                      d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
-                      fill="currentColor" />
-                  </svg>
-                </button>
-
-                <button class="icon-btn danger" type="button" :aria-label="t('delete')" :title="t('delete')"
-                  @click.stop="deleteSongById(s.id)">
-                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                    <path
-                      d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 7h2v9h-2v-9zm4 0h2v9h-2v-9zM7 10h2v9H7v-9zm1-1h10l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 9h2z"
-                      fill="#d32f2f" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div class="small">{{ t("tipAddSongs") }}</div>
-          </div>
-
-          <div v-else-if="sourceTab === 'paste'" class="panel">
-            <div class="row">
-              <label>{{ t("title") }}</label>
-              <input v-model="pasteForm.title" :placeholder="t('titlePlaceholder')" />
-            </div>
-            <div class="row">
-              <label>{{ t("artist") }}</label>
-              <input v-model="pasteForm.artist" :placeholder="t('optional')" />
-            </div>
-            <div class="row">
-              <label>{{ t("album") }}</label>
-              <input v-model="pasteForm.album" :placeholder="t('optional')" />
-            </div>
-
-            <label>{{ t("pasteFullLyrics") }}</label>
-            <textarea v-model="pasteForm.text" rows="12" :placeholder="t('pastePlaceholder')"></textarea>
-            <div class="row sticky-actions">
-              <button class="btn primary" @click="addSongFromPaste()">
-                {{ t("addToLibrary") }}
-              </button>
-              <button class="btn" @click="clearPasteForm()">
-                {{ t("clear") }}
-              </button>
-            </div>
-            <div class="small">{{ t("pasteHint") }}</div>
-          </div>
-
-          <div v-else class="panel">
-            <div class="row">
-              <label>{{ t("importFromFile") }}</label>
-              <input type="file" accept=".json" @change="handleFileImport" />
-            </div>
-
-            <div style="text-align: center; margin: 16px 0; color: #999;">
-              — {{ t("or") }} —
-            </div>
-
-            <label>{{ t("pasteJson") }}</label>
-            <textarea v-model="jsonImportText" rows="12" :placeholder="t('jsonPlaceholder')"></textarea>
-
-            <div class="row">
-              <button class="btn primary" @click="importSongsJson()">{{ t("import") }}</button>
-              <button class="btn" @click="jsonImportText = ''">{{ t("clear") }}</button>
-            </div>
-
-            <details class="small">
-              <summary>{{ t("jsonSchemaExampleTitle") }}</summary>
-              <pre class="code">{{ jsonSchemaExample }}</pre>
-            </details>
-          </div>
-        </div>
-      </section>
+      <SongsTab v-if="appTab === 'songs'" @edit-song="startEditSong" @navigate="appTab = ($event as AppTab)" />
 
       <!-- MODAL: Edit Song -->
       <div v-if="editingSongId" class="modal-overlay" @click.self="editingSongId = null">
@@ -431,9 +272,7 @@
       </section>
 
       <!-- TAB: Settings -->
-      <section v-else-if="appTab === 'settings'">
-        <SettingsTab @reset-round="resetRound" />
-      </section>
+      <SettingsTab v-else-if="appTab === 'settings'" @reset-round="resetRound" />
 
       <!-- TAB: About -->
       <section v-else-if="appTab === 'about'" class="about">
@@ -453,7 +292,10 @@
 import { computed, onMounted, reactive, ref, watch, Ref } from "vue";
 import TrainerShell from "./components/trainer/TrainerShell.vue";
 import SettingsTab from "./components/tabs/SettingsTab.vue";
+import SongsTab from "./components/tabs/SongsTab.vue";
 import { useI18n } from "./composables/useI18n";
+import { useSongs } from "./composables/useSongs";
+import { useSettings } from "./composables/useSettings";
 import type { Lang } from "./types";
 
 /**
@@ -494,7 +336,6 @@ type HintLine = "on" | "off";
 type NextLineInput = "choice" | "type";
 
 const LS_SONGS = "lyricsTrainer.songs.v1";
-const LS_SETTINGS = "lyricsTrainer.settings.v1";
 const showContinue = ref(false);
 const lastWasCorrect = ref(false);
 const lastClozePick = ref<{ key: string; ok: boolean } | null>(null);
@@ -515,44 +356,10 @@ const appTab: Ref<AppTab> = ref("songs");
 
 /**
  * -----------------------------
- * Reactive settings (includes i18n + all prior options)
+ * Reactive settings — shared singleton via useSettings()
  * -----------------------------
  */
-const settings = reactive<{
-  uiLang: Lang;
-  mode: Mode;
-  order: Order;
-  optionCount: number;
-
-  nextLineInput: NextLineInput;
-
-  clozeStartMissing: number;
-  clozeMaxMissing: number;
-  clozeProgression: ClozeProgression;
-  clozeInput: ClozeInput;
-  showClozeTarget: "on" | "off";
-
-  typeTarget: TypeTarget;
-  normalize: Normalize;
-  showHintLine: HintLine;
-}>({
-  uiLang: "en",
-  mode: "nextLine",
-  order: "sequence",
-  optionCount: 4,
-
-  nextLineInput: "choice",
-
-  clozeStartMissing: 1,
-  clozeMaxMissing: 6,
-  clozeProgression: "on",
-  clozeInput: "choice",
-  showClozeTarget: "off",
-
-  typeTarget: "nextLine",
-  normalize: "basic",
-  showHintLine: "on",
-});
+const { settings, loadSettings, watchAndPersist: watchSettings } = useSettings();
 
 /**
  * -----------------------------
@@ -652,48 +459,35 @@ function seedSongs(): Song[] {
  */
 const sourceTab = ref<"library" | "paste" | "json">("library");
 
-const songSets = ref<SongSet[]>([]);
-const currentSetId = ref<string | null>(null);
-const songs = computed(() => {
-  const set = songSets.value.find((s) => s.id === currentSetId.value);
-  return set?.songs ?? [];
-});
-const currentSongId = ref<string | null>(null);
-
-// Helper to get the current set for mutations
-function getCurrentSet(): SongSet | null {
-  return songSets.value.find((s) => s.id === currentSetId.value) ?? null;
-}
+// Songs state — shared singleton via useSongs()
+const {
+  songSets,
+  currentSetId,
+  currentSongId,
+  songs,
+  currentSong: _currentSong,
+  getCurrentSet,
+  createNewSet: _createNewSet,
+  deleteCurrentSet: _deleteCurrentSet,
+  renameCurrentSet: _renameCurrentSet,
+  loadSongs,
+  persistSongs,
+  watchAndPersist: watchSongs,
+} = useSongs();
 
 // Song Set management
 function createNewSet() {
   const name = prompt(t("setName"));
   if (!name || !name.trim()) return;
-
-  const newSet: SongSet = {
-    id: cryptoRandomId(),
-    name: name.trim(),
-    createdAt: new Date().toISOString(),
-    songs: [],
-  };
-
-  songSets.value.push(newSet);
-  currentSetId.value = newSet.id;
-  currentSongId.value = null;
-
-  setFeedback(true, `Set "${newSet.name}" created.`);
+  const newSet = _createNewSet(name);
+  if (newSet) setFeedback(true, `Set "${newSet.name}" created.`);
 }
 
 function deleteCurrentSet() {
   const set = getCurrentSet();
   if (!set) return;
-
   if (!confirm(`Delete set "${set.name}"? This cannot be undone.`)) return;
-
-  songSets.value = songSets.value.filter((s) => s.id !== set.id);
-  currentSetId.value = songSets.value.length ? songSets.value[0].id : null;
-  currentSongId.value = null;
-
+  _deleteCurrentSet();
   setFeedback(true, `Set deleted.`);
   resetRound(true);
 }
@@ -701,14 +495,11 @@ function deleteCurrentSet() {
 function renameCurrentSet() {
   const set = getCurrentSet();
   if (!set) return;
-
   const newName = prompt(t("setName"), set.name);
   if (!newName || !newName.trim()) return;
-
   const trimmed = newName.trim();
   if (trimmed === set.name) return;
-
-  set.name = trimmed;
+  _renameCurrentSet(trimmed);
   setFeedback(true, `Set renamed to "${trimmed}".`);
 }
 
@@ -904,6 +695,8 @@ const sortedFilteredSongs = computed(() => {
 onMounted(() => {
   loadSongs();
   loadSettings();
+  watchSongs();
+  watchSettings();
 
   // Initialize default set if none exist
   if (!songSets.value.length) {
@@ -913,7 +706,7 @@ onMounted(() => {
       createdAt: new Date().toISOString(),
       songs: seedSongs(),
     };
-    songSets.value = [defaultSet];
+    songSets.value.push(defaultSet);
     currentSetId.value = defaultSet.id;
     persistSongs();
   }
@@ -951,70 +744,10 @@ watch(
 );
 
 watch(
-  () => ({ ...settings }),
-  () => persistSettings(),
-  { deep: true }
-);
-
-watch(
   () => songs.value,
   () => persistSongs(),
   { deep: true }
 );
-
-function loadSongs() {
-  const raw = localStorage.getItem(LS_SONGS);
-  if (!raw) return;
-  try {
-    const parsed = JSON.parse(raw) as any;
-
-    // New format: with sets
-    if (Array.isArray(parsed.songSets) && parsed.songSets.length > 0) {
-      songSets.value = parsed.songSets;
-      currentSetId.value = parsed.currentSetId || (parsed.songSets.length > 0 ? parsed.songSets[0].id : null);
-      currentSongId.value = parsed.currentSongId || null;
-      return;
-    }
-
-    // Legacy format: flat songs array. Convert to "Existing Songs" set for backward compatibility
-    if (Array.isArray(parsed.songs) && parsed.songs.length > 0) {
-      const existingSet: SongSet = {
-        id: cryptoRandomId(),
-        name: "Existing Songs",
-        createdAt: new Date().toISOString(),
-        songs: parsed.songs,
-      };
-      songSets.value = [existingSet];
-      currentSetId.value = existingSet.id;
-      currentSongId.value = parsed.currentSongId || null;
-    }
-  } catch {
-    // ignore
-  }
-}
-function persistSongs() {
-  localStorage.setItem(
-    LS_SONGS,
-    JSON.stringify({
-      songSets: songSets.value,
-      currentSetId: currentSetId.value,
-      currentSongId: currentSongId.value,
-    })
-  );
-}
-function loadSettings() {
-  const raw = localStorage.getItem(LS_SETTINGS);
-  if (!raw) return;
-  try {
-    const parsed = JSON.parse(raw);
-    Object.assign(settings, parsed);
-  } catch {
-    // ignore
-  }
-}
-function persistSettings() {
-  localStorage.setItem(LS_SETTINGS, JSON.stringify(settings));
-}
 
 /**
  * -----------------------------
@@ -1224,76 +957,10 @@ function importSongsJson() {
   const raw = jsonImportText.value.trim();
   if (!raw) return setFeedback(false, t("jsonPasteFirst"));
   try {
-    const parsed = JSON.parse(raw);
-
-    // Check if it's a complete sets export (new format)
-    if (Array.isArray(parsed.songSets)) {
-      // Import complete sets collection
-      const incomingSets = parsed.songSets as any[];
-
-      // Merge with existing sets (by ID to avoid duplicates)
-      const setById = new Map<string, SongSet>();
-      for (const set of songSets.value) setById.set(set.id, set);
-
-      let importedCount = 0;
-      for (const incomingSet of incomingSets) {
-        const validated = validateSongSet(incomingSet);
-        if (validated) {
-          setById.set(validated.id, validated);
-          importedCount++;
-        }
-      }
-
-      songSets.value = Array.from(setById.values());
-      if (!currentSetId.value && songSets.value.length) {
-        currentSetId.value = songSets.value[0].id;
-      }
-
-      setFeedback(true, t("importedSongSets", { n: importedCount }));
-      jsonImportText.value = "";
-      sourceTab.value = "library";
-      resetRound(true);
-      return;
-    }
-
-    // Legacy/single format: array of songs or { songs: [] }
-    const incomingSongs: Song[] = Array.isArray(parsed)
-      ? parsed
-      : Array.isArray(parsed?.songs)
-        ? parsed.songs
-        : [];
-
-    const cleaned = incomingSongs
-      .map((x) => sanitizeSong(x))
-      .filter((x): x is Song => !!x && x.lines.length >= 2 && !!x.title);
-
-    if (!cleaned.length) return setFeedback(false, t("noValidSongs"));
-
-    // If no set data, import into a new set (backward compatibility)
-    if (!currentSetId.value || !getCurrentSet()) {
-      const newSet: SongSet = {
-        id: cryptoRandomId(),
-        name: `Imported ${new Date().toLocaleDateString()}`,
-        createdAt: new Date().toISOString(),
-        songs: cleaned,
-      };
-      songSets.value.push(newSet);
-      currentSetId.value = newSet.id;
-    } else {
-      // Merge into current set
-      const set = getCurrentSet();
-      if (set) {
-        const byId = new Map<string, Song>();
-        for (const s of set.songs) byId.set(s.id, s);
-        for (const s of cleaned) byId.set(s.id, s);
-        set.songs = Array.from(byId.values());
-      }
-    }
-
-    if (!currentSongId.value && songs.value.length)
-      currentSongId.value = songs.value[0].id;
-
-    setFeedback(true, t("importedSongs", { n: cleaned.length }));
+    const { importSongsJson: doImport } = useSongs();
+    const count = doImport(raw);
+    if (count === 0) return setFeedback(false, t("noValidSongs"));
+    setFeedback(true, t("importedSongs", { n: count }));
     jsonImportText.value = "";
     sourceTab.value = "library";
     resetRound(true);

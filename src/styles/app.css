@@ -260,7 +260,7 @@ main.grid {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-  padding: 0px;
+  padding: 14px;
 }
 
 /* Shared inputs */
@@ -484,10 +484,10 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  overflow: auto;
   overflow-y: auto;
-  max-height: 100%;
+  max-height: 60vh;
   padding-right: 6px;
+  margin: 12px 0;
 }
 
 .song-title {

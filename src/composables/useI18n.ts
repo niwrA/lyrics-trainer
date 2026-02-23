@@ -3,7 +3,6 @@
  */
 
 import type { Lang, Messages } from "../types";
-import { computed } from "vue";
 
 const messages: Record<Lang, Messages> = {
   en: {
@@ -472,12 +471,11 @@ export function useI18n(uiLang: Lang | (() => Lang)) {
   const getLang = (): Lang =>
     typeof uiLang === "function" ? uiLang() : uiLang;
 
+  // Plain function — Vue tracks reactive reads (e.g. settings.uiLang via getter)
+  // during template/computed render, so language changes trigger re-renders.
   const t = (key: string, params?: Record<string, string | number>): string => {
     const lang = getLang();
-    return formatParams(
-      messages[lang]?.[key] ?? messages.en[key] ?? key,
-      params
-    );
+    return formatParams(messages[lang]?.[key] ?? messages.en[key] ?? key, params);
   };
 
   return { t };
