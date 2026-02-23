@@ -351,8 +351,7 @@ button:focus-visible {
     background-color: #fafafa;
   }
 }
-
-/* Training Mode Selector */
+/* 
 .training-mode-selector {
   background-color: rgba(83, 91, 242, 0.08);
   border: 2px solid rgba(83, 91, 242, 0.3);
@@ -390,7 +389,7 @@ button:focus-visible {
   outline: none;
   border-color: #535bf2;
   box-shadow: 0 0 0 3px rgba(83, 91, 242, 0.2);
-}
+} */
 
 /* Settings Sections */
 .settings-section {
@@ -447,10 +446,9 @@ button:focus-visible {
 .field select,
 .field input {
   padding: 8px 10px;
-  border: 1px solid #444;
   border-radius: 6px;
-  background-color: #2d2d2d;
-  color: #fff;
+  background-color: #fff;
+  color: #2d2d2d;
   font-size: 0.9em;
 }
 

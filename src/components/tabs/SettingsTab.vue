@@ -1,16 +1,14 @@
 <template>
   <section class="card">
     <div class="card-body">
-      <div v-if="!currentSong" class="empty">{{ t("chooseSongFirst") }}</div>
-
-      <div v-else>
+      <div>
         <!-- Global Settings -->
         <div class="settings-section settings-global">
           <h3 class="settings-section-title">{{ t("exerciseAndOptions") }}</h3>
           <div class="settings-grid">
             <div class="field">
               <label>{{ t("uiLanguage") }}</label>
-              <select v-model="settings.uiLang">
+              <select v-model="settings.uiLang" @change="reset(false)">
                 <option value="en">English</option>
                 <option value="es">Español</option>
               </select>
@@ -18,7 +16,7 @@
 
             <div class="field">
               <label>{{ t("order") }}</label>
-              <select v-model="settings.order">
+              <select v-model="settings.order" @change="reset(true)">
                 <option value="sequence">{{ t("orderSequence") }}</option>
                 <option value="random">{{ t("orderRandom") }}</option>
               </select>
@@ -26,7 +24,7 @@
 
             <div class="field">
               <label>{{ t("optionCount") }}</label>
-              <select v-model.number="settings.optionCount">
+              <select v-model.number="settings.optionCount" @change="reset(true)">
                 <option :value="3">3</option>
                 <option :value="4">4</option>
                 <option :value="5">5</option>
@@ -36,7 +34,7 @@
 
             <div class="field">
               <label>{{ t("normalization") }}</label>
-              <select v-model="settings.normalize">
+              <select v-model="settings.normalize" @change="reset(false)">
                 <option value="strict">{{ t("normStrict") }}</option>
                 <option value="basic">{{ t("normBasic") }}</option>
                 <option value="punct">{{ t("normPunct") }}</option>
@@ -49,7 +47,7 @@
         <div class="settings-section settings-mode-selector">
           <h3 class="settings-section-title">{{ t("mode") }}</h3>
           <div style="padding: 0 15px;">
-            <select v-model="settings.mode" style="width: 100%;">
+            <select v-model="settings.mode" @change="reset(true)" style="width: 100%;">
               <option value="nextLine">{{ t("modeNextLine") }}</option>
               <option value="cloze">{{ t("modeCloze") }}</option>
               <option value="type">{{ t("modeType") }}</option>
@@ -64,7 +62,7 @@
           <div class="settings-grid">
             <div class="field" v-if="settings.mode === 'nextLine'">
               <label>{{ t("nextLineInput") }}</label>
-              <select v-model="settings.nextLineInput">
+              <select v-model="settings.nextLineInput" @change="reset(false)">
                 <option value="choice">{{ t("inputChoice") }}</option>
                 <option value="type">{{ t("inputType") }}</option>
               </select>
@@ -72,17 +70,17 @@
 
             <div class="field" v-if="settings.mode === 'cloze'">
               <label>{{ t("clozeStartMissing") }}</label>
-              <input type="number" min="1" :max="12" v-model.number="settings.clozeStartMissing" />
+              <input type="number" min="1" :max="12" v-model.number="settings.clozeStartMissing" @change="reset(true)" />
             </div>
 
             <div class="field" v-if="settings.mode === 'cloze'">
               <label>{{ t("clozeMaxMissing") }}</label>
-              <input type="number" min="1" :max="16" v-model.number="settings.clozeMaxMissing" />
+              <input type="number" min="1" :max="16" v-model.number="settings.clozeMaxMissing" @change="reset(true)" />
             </div>
 
             <div class="field" v-if="settings.mode === 'cloze'">
               <label>{{ t("clozeProgression") }}</label>
-              <select v-model="settings.clozeProgression">
+              <select v-model="settings.clozeProgression" @change="reset(true)">
                 <option value="on">{{ t("on") }}</option>
                 <option value="off">{{ t("off") }}</option>
               </select>
@@ -90,7 +88,7 @@
 
             <div class="field" v-if="settings.mode === 'cloze'">
               <label>{{ t("clozeInput") }}</label>
-              <select v-model="settings.clozeInput">
+              <select v-model="settings.clozeInput" @change="reset(true)">
                 <option value="choice">{{ t("inputChoice") }}</option>
                 <option value="type">{{ t("inputType") }}</option>
               </select>
@@ -98,7 +96,7 @@
 
             <div class="field" v-if="settings.mode === 'cloze' && settings.clozeInput === 'choice'">
               <label>{{ t("showClozeTarget") }}</label>
-              <select v-model="settings.showClozeTarget">
+              <select v-model="settings.showClozeTarget" @change="reset(false)">
                 <option value="off">{{ t("off") }}</option>
                 <option value="on">{{ t("on") }}</option>
               </select>
@@ -106,7 +104,7 @@
 
             <div class="field" v-if="settings.mode === 'type'">
               <label>{{ t("typeMode") }}</label>
-              <select v-model="settings.typeTarget">
+              <select v-model="settings.typeTarget" @change="reset(true)">
                 <option value="nextLine">{{ t("typeNextLine") }}</option>
                 <option value="currentLine">{{ t("typeCurrentLine") }}</option>
               </select>
@@ -114,7 +112,7 @@
 
             <div class="field" v-if="settings.mode === 'type' && settings.typeTarget === 'currentLine'">
               <label>{{ t("showHintLine") }}</label>
-              <select v-model="settings.showHintLine">
+              <select v-model="settings.showHintLine" @change="reset(true)">
                 <option value="on">{{ t("on") }}</option>
                 <option value="off">{{ t("off") }}</option>
               </select>
@@ -125,31 +123,22 @@
             </div>
           </div>
         </div>
-
-        <div class="small" style="margin-top: 10px;">
-          {{ t("footer") }}
-        </div>
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
 import { useSongs } from "../../composables/useSongs";
 import { useSettings } from "../../composables/useSettings";
 import { useI18n } from "../../composables/useI18n";
 
-// Composables
-const { t } = useI18n("en");
-const { currentSong, loadSongs } = useSongs();
-const { settings, loadSettings } = useSettings();
+const emit = defineEmits<{ (e: "reset-round", newQuestion: boolean): void }>();
+const reset = (newQuestion: boolean) => emit("reset-round", newQuestion);
 
-// Load data on mount
-onMounted(() => {
-  loadSongs();
-  loadSettings();
-});
+const { currentSong } = useSongs();
+const { settings } = useSettings();
+const { t } = useI18n(() => settings.uiLang as "en" | "es");
 </script>
 
 <style scoped>
