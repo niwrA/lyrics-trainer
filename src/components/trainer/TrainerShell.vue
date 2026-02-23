@@ -131,7 +131,7 @@ const { t } = useI18n("en");
 }
 
 .song-header {
-  padding: 16px;
+  padding: 0px 0 0 0;
   background: #f5f5f5;
   border-radius: 8px;
 }

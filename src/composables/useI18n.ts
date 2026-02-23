@@ -228,7 +228,7 @@ const messages: Record<Lang, Messages> = {
     noModeSettings: "No additional settings for this mode.",
   },
   es: {
-    appTitle: "Entrenador de Letras (Vue)",
+    appTitle: "Entrenador de Letras",
     appSubtitle:
       "Practica letras: siguiente línea (MCQ), cloze o escribir. Fuente: pegar o JSON.",
     resetSession: "Reiniciar sesión",
