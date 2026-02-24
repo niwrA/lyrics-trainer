@@ -11,8 +11,10 @@
 
 <script setup lang="ts">
 import { useI18n } from "../../composables/useI18n";
+import { useSettings } from "../../composables/useSettings";
 
-const { t } = useI18n("en");
+const { settings } = useSettings();
+const { t } = useI18n(() => settings.uiLang as "en" | "es");
 </script>
 
 <style scoped>

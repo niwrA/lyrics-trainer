@@ -36,6 +36,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "../../composables/useI18n";
+import { useSettings } from "../../composables/useSettings";
 import { normalizeForCompare } from "../../utils/text";
 import type { Song } from "../../types";
 
@@ -46,7 +47,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const { t } = useI18n("en");
+const { settings } = useSettings();
+const { t } = useI18n(() => settings.uiLang as "en" | "es");
 
 // Get current vocabulary word
 const currentWord = computed(() => {

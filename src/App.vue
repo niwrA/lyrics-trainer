@@ -337,6 +337,9 @@ const showOnboarding = ref(false);
 const GOOD_MS = 1200; // show success feedback longer
 const GOOD_WITH_DETAILS_MS = 2000; // show success feedback with explanation even longer
 
+// Track pending auto-advance timer so it can be cancelled on song change / reset
+let advanceTimer: ReturnType<typeof setTimeout> | null = null;
+
 
 /**
  * -----------------------------
@@ -580,6 +583,7 @@ const training = computed(() => ({
   submitTypedLine,
   setActiveBlankIndex,
   tryAgainSamePrompt,
+  continueAfterWrong,
 }));
 
 /**
@@ -789,7 +793,11 @@ function resetSession() {
 function advanceAfterCorrect(delayMs?: number) {
   // Use longer delay if there are feedback details (explanation), otherwise use default
   const actualDelay = delayMs ?? (feedback.details ? GOOD_WITH_DETAILS_MS : GOOD_MS);
-  setTimeout(() => newPrompt(), actualDelay);
+  if (advanceTimer !== null) clearTimeout(advanceTimer);
+  advanceTimer = setTimeout(() => {
+    advanceTimer = null;
+    newPrompt();
+  }, actualDelay);
 }
 
 /**
@@ -798,6 +806,10 @@ function advanceAfterCorrect(delayMs?: number) {
  * -----------------------------
  */
 function resetRoundUiState() {
+  if (advanceTimer !== null) {
+    clearTimeout(advanceTimer);
+    advanceTimer = null;
+  }
   roundLocked.value = false;
   typedInput.value = "";
   revealAnswer.value = false;

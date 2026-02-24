@@ -35,9 +35,9 @@ import { useI18n } from "../../composables/useI18n";
 import TrainerShell from "../trainer/TrainerShell.vue";
 
 // Composables
-const { t } = useI18n("en");
-const songs = useSongs();
 const { settings, loadSettings } = useSettings();
+const { t } = useI18n(() => settings.uiLang as "en" | "es");
+const songs = useSongs();
 
 // Load data on mount
 onMounted(() => {

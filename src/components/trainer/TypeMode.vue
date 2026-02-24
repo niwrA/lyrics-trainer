@@ -32,6 +32,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "../../composables/useI18n";
+import { useSettings } from "../../composables/useSettings";
 
 interface Props {
   training: any;
@@ -39,7 +40,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const { t } = useI18n("en");
+const { settings } = useSettings();
+const { t } = useI18n(() => settings.uiLang as "en" | "es");
 
 // Two-way binding for typed input
 const typedInput = computed({

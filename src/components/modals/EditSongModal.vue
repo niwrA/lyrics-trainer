@@ -139,6 +139,7 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from "vue";
 import { useSongs } from "../../composables/useSongs";
+import { useSettings } from "../../composables/useSettings";
 import { useI18n } from "../../composables/useI18n";
 import type { Song } from "../../types";
 
@@ -156,7 +157,8 @@ const emit = defineEmits<{
 }>();
 
 // Composables
-const { t } = useI18n("en");
+const { settings } = useSettings();
+const { t } = useI18n(() => settings.uiLang as "en" | "es");
 const { songs, currentSong, updateSong } = useSongs();
 
 // State
